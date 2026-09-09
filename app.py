@@ -27,35 +27,6 @@ pg = st.navigation(
     position="top",
 )
 
-if pg.title == "Inicio":
-    st.markdown(
-        """
-        <style>
-            /* Elimina el contenedor del sidebar por completo */
-            section[data-testid="stSidebar"] {
-                display: none !important;
-                width: 0px !important;
-            }
-            
-            /* Oculta el botón flotante superior izquierdo (flecha <<) */
-            button[data-testid="stSidebarCollapseButton"] {
-                display: none !important;
-            }
-            
-            /* Fuerza a que el bloque principal use el 100% real sin padding izquierdo residual */
-            .stMainBlockContainer {
-                max-width: 100% !important;
-                padding-left: 5rem !important; /* Ajusta según prefieras el margen de tu diseño */
-                padding-right: 5rem !important;
-            }
-            
-            /* Ajusta la raíz de la app multipágina para remover el split layout */
-            div[data-testid="stAppViewBlockContainer"] {
-                width: 100% !important;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+
 
 pg.run()
