@@ -106,6 +106,22 @@ def cargar_datos():
 # Mostrar df limpio
 df = cargar_datos()
 
+@st.cache_data
+def cargar_ciudades():
+    # Carpeta raíz
+    src_dir = Path(__file__).resolve().parent.parent
+    ruta = (src_dir / "data" / "Estados.parquet").as_posix()
+    df = (
+        pd.read_parquet(ruta)
+        .sort_values("state")
+        .drop_duplicates()
+        .reset_index(drop=True)
+    )
+    return df
+
+
+df_ciudades_estados = cargar_ciudades()
+
 # Preguntas del proyecto
 st.markdown(
     """
