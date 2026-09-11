@@ -1,31 +1,32 @@
-from pages.Inicio import cargar_datos
+from pages.Inicio import cargar_datos,cargar_ciudades
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from pathlib import Path
 
-
 # Título.
-st.header("Análisis por Estado & Ciudad", text_alignment="center", divider="gray")
+st.header(
+    "Análisis de Clima por Estado & Ciudad", text_alignment="center", divider="gray"
+)
 
 # Inicializar estado "temporada" y "estados"
 if "temporada" not in st.session_state:
     st.session_state.temporada = "Todos"
 if "estados" not in st.session_state:
-    st.session_state.estados = list("")
+    st.session_state.estados = "Andaman and Nicobar Islands"
 if "escala" not in st.session_state:
     st.session_state.escala = "Década"
 
 # Cargar datos
 df_extraido = cargar_datos()
-
+df_ciudades_estados = cargar_ciudades()
 
 # Fragmentamos el contenedor para que no recargue toda la página.
 @st.fragment
 def contenedor():
 
     # Título sidebar
-    titulo_sidebar = st.sidebar.markdown(
+    st.sidebar.markdown(
         "**Filtros**", text_alignment="center", wrap=True, unsafe_allow_html=True
     )
     # Creamos el selector de temporada.
@@ -228,13 +229,9 @@ def contenedor():
         diurna_comparativo = int((diurna_actual - diurna_ly) * 60)
 
         # Precipitación
-        precipitacion_ly = df_filtro_estado_ciudad[
-            df_filtro_estado_ciudad["Year"] == 2025
-        ]["Precipitation_mm"].sum()
         precipitacion_actual = df_filtro_estado_ciudad[
             df_filtro_estado_ciudad["Year"] == 2026
         ]["Precipitation_mm"].sum()
-        precipitacion_comparativa = precipitacion_actual - precipitacion_ly
 
         # Evapotranspiración
         evapotransp_ly = df_filtro_estado_ciudad[
@@ -243,30 +240,33 @@ def contenedor():
         evapotransp_actual = df_filtro_estado_ciudad[
             df_filtro_estado_ciudad["Year"] == 2026
         ]["Ref_Evapotransp_mm"].sum()
-        evapotransp_comparativa = evapotransp_actual - evapotransp_ly
 
         # Balance hídrico
-        balance_hidrico_actual = precipitacion_actual-(evapotransp_actual*1.07)
-        balance_hidrico_ly = precipitacion_ly-(evapotransp_ly*1.07)
+        balance_hidrico_normal = precipitacion_actual - evapotransp_actual
 
-        def balance_hidrico(precipitacion,evapotranspiracion):
+        def balance_hidrico(precipitacion, evapotranspiracion):
             if precipitacion < evapotranspiracion:
                 return "Décifit hídrico"
-            elif precipitacion <= (evapotranspiracion*1.07):
+            elif precipitacion <= (evapotranspiracion * 1.07):
                 return "Superávit hídrico"
             else:
                 return "Superávit crítico"
 
-        if balance_hidrico(precipitacion_actual,evapotransp_actual) == "Décifit hídrico":
+        if (
+            balance_hidrico(precipitacion_actual, evapotransp_actual)
+            == "Décifit hídrico"
+        ):
             actual = "down"
             color = "orange"
-        elif balance_hidrico(precipitacion_actual,evapotransp_actual) == "Superávit hídrico":
+        elif (
+            balance_hidrico(precipitacion_actual, evapotransp_actual)
+            == "Superávit hídrico"
+        ):
             actual = "up"
             color = "green"
         else:
             actual = "up"
             color = "red"
-
 
         col1.metric(
             label="Temp Min Actual",
@@ -319,8 +319,8 @@ def contenedor():
         col4.metric(
             label="Precipitación Actual",
             value=f"{precipitacion_actual:.1f} mm",
-            delta=f"{balance_hidrico_actual:.1f} mm",
-            delta_description=f"{balance_hidrico(precipitacion_actual,evapotransp_actual)}",
+            delta=f"{balance_hidrico_normal:.1f} mm",
+            delta_description=f"{balance_hidrico(precipitacion_actual, evapotransp_actual)}",
             delta_arrow=actual,
             delta_color=color,
             icon="☔",
@@ -328,13 +328,13 @@ def contenedor():
         )
         col4.metric(
             label="Límite Superávit crítico Actual",
-            value=f"{evapotransp_actual*1.07:.1f} mm",
-            delta=f"{evapotransp_actual*1.07-evapotransp_ly*1.07:.1f} mm",
-            delta_description=f"vs 2025 ({evapotransp_ly*1.07:.1f} mm)",
+            value=f"{evapotransp_actual * 1.07:.1f} mm",
+            delta=f"{evapotransp_actual * 1.07 - evapotransp_ly * 1.07:.1f} mm",
+            delta_description=f"vs 2025 ({evapotransp_ly * 1.07:.1f} mm)",
             delta_arrow="off",
             icon="🌳",
             border=True,
-            delta_color="gray"
+            delta_color="gray",
         )
         st.divider()
 
@@ -350,7 +350,7 @@ def contenedor():
         placeholder="Seleccione una ciudad",
         wrap=True,
     )
-    st.sidebar.divider()
+
     radio = st.sidebar.radio(
         label="Escala de tiempo",
         options=["Década", "Año", "Año-Trimestre", "Año-Mes"],
@@ -401,6 +401,72 @@ def contenedor():
     df_filtro_escala_ag["Temp_Media"] = (
         df_filtro_escala_ag["Temp_Max"] + df_filtro_escala_ag["Temp_Min"]
     ) / 2
+    df_filtro_escala_ag["Sunshine_hrs_median"] = round(
+        (df_filtro_escala_ag["Sunshine_sec_median"] / 3600), 2
+    )
+    df_filtro_escala_ag["Daylight_hrs_median"] = round(
+        (df_filtro_escala_ag["Daylight_sec_median"] / 3600), 2
+    )
+
+    def crear_radiacion():
+        aceptable = [20] * len(df_filtro_escala_ag["eje_x"])
+        fig = go.Figure()
+        radiacion_min = go.Scatter(
+            x=df_filtro_escala_ag["eje_x"],
+            y=df_filtro_escala_ag["Solar_Radiation_min"],
+            name="Mínimo mj/m²",
+            line_shape="spline",
+            opacity=0.2,
+            line={"color": "skyblue"},
+        )
+        radiacion_aceptable = go.Scatter(
+            x=df_filtro_escala_ag["eje_x"],
+            y=aceptable,
+            name="Aceptable mj/m²",
+            mode="lines",
+            line={"dash": "dot", "color": "orange"},
+            opacity=0.7,
+        )
+        radiacion_media = go.Scatter(
+            x=df_filtro_escala_ag["eje_x"],
+            y=df_filtro_escala_ag["Solar_Radiation_median"],
+            name="Promedio mj/m²",
+            mode="markers",
+            line_shape="spline",
+            marker={"color": "green"},
+        )
+        radiacion_max = go.Scatter(
+            x=df_filtro_escala_ag["eje_x"],
+            y=df_filtro_escala_ag["Solar_Radiation_max"],
+            name="Máximo mj/m²",
+            line_shape="spline",
+            opacity=0.2,
+            line={"color": "red"},
+        )
+        fig.add_traces(
+            [radiacion_min, radiacion_aceptable, radiacion_media, radiacion_max]
+        )
+        fig.update_xaxes(
+            rangeslider={"visible": True, "autorange": True},
+            type="date",
+            autorange=True,
+        )
+        fig.update_layout(
+            legend={
+                "orientation": "h",
+                "yanchor": "bottom",
+                "y": 1.15,
+                "xanchor": "center",
+                "x": 0.5,
+            },
+            margin={"t": 100},
+        )
+        st.markdown(
+            f"<h5 style='text-align:center;'>Tendencia de Radiación Solar ({selector} 1940 - 2026)</h5>",
+            unsafe_allow_html=True,
+        )
+        st.plotly_chart(fig)
+        st.divider()
 
     def crear_grafico_temp():
         fig = go.Figure()
@@ -410,7 +476,7 @@ def contenedor():
             name="Mínimo °C",
             line_shape="spline",
             line={"color": "skyblue"},
-            opacity=0.35,
+            opacity=0.2,
         )
         temp_media = go.Scatter(
             x=df_filtro_escala_ag["eje_x"],
@@ -426,7 +492,7 @@ def contenedor():
             name="Máximo C°",
             line_shape="spline",
             line={"color": "red"},
-            opacity=0.35,
+            opacity=0.2,
         )
 
         if radio == "Año-Mes":
@@ -440,14 +506,120 @@ def contenedor():
             type="date",
             autorange=True,
         )
-        fig.update_layout({"title": f"Tendencia de Temperatura ({selector} 1940-2026)"})
+        fig.update_layout(
+            legend={
+                "orientation": "h",
+                "yanchor": "bottom",
+                "y": 1.15,
+                "xanchor": "center",
+                "x": 0.5,
+            },
+            margin={"t": 100},
+        )
+        st.markdown(
+            f"<h5 style='text-align:center;'>Tendencia de Temperatura ({selector} 1940 - 2026)</h5>",
+            unsafe_allow_html=True,
+        )
         st.plotly_chart(fig, key="linea_chart")
         st.divider()
+
+    def crear_brillo_solar():
+        fig = go.Figure()
+        brillo_solar = go.Scatter(
+            x=df_filtro_escala_ag["eje_x"],
+            y=df_filtro_escala_ag["Sunshine_hrs_median"],
+            name="Horas de brillo solar",
+            line={"dash": "dot", "color": "green"},
+            line_shape="spline",
+        )
+        diurno = go.Scatter(
+            x=df_filtro_escala_ag["eje_x"],
+            y=df_filtro_escala_ag["Daylight_hrs_median"],
+            name="Horas diurnas",
+            mode="lines",
+            line={"color": "orange"},
+            line_shape="spline",
+        )
+        fig.add_traces([brillo_solar, diurno])
+        fig.update_xaxes(
+            rangeslider={"visible": True, "autorange": True},
+            type="date",
+            autorange=True,
+        )
+        fig.update_layout(
+            legend={
+                "orientation": "h",
+                "yanchor": "bottom",
+                "y": 1.15,
+                "xanchor": "center",
+                "x": 0.5,
+            },
+            margin={"t": 100},
+        )
+        st.markdown(
+            f"<h5 style='text-align:center;'>Tendencia de duración del día y brillo solar ({selector} 1940 - 2026)</h5>",
+            unsafe_allow_html=True,
+        )
+        st.plotly_chart(fig)
+        st.divider()
+
+    def balance_hidrico():
+        fig = go.Figure()
+        precipitacion = go.Scatter(
+            x=df_filtro_escala_ag["eje_x"],
+            y=df_filtro_escala_ag["Precipitation_total"],
+            name="Total precipitaciones (mm)",
+            fill="tozeroy",
+            fillcolor="#498ee8",
+            line={"color": "#498ee8"},
+            mode="lines",
+        )
+        evapotransp = go.Scatter(
+            x=df_filtro_escala_ag["eje_x"],
+            y=df_filtro_escala_ag["Ref_Evapotransp_total"],
+            name="Total Evapotranspiración (mm)",
+            fill="tozeroy",
+            fillcolor="#a2caf3",
+            line={"color": "#a2caf3"},
+            mode="lines",
+            opacity=0.3,
+        )
+        limite = go.Scatter(
+            x=df_filtro_escala_ag["eje_x"],
+            y=df_filtro_escala_ag["Ref_Evapotransp_total"] * 1.07,
+            mode="lines",
+            name="Límite de Superávit Hídrico (mm)",
+            line={"color": "#b4d6f8", "dash": "dot"},
+        )
+        fig.add_traces([limite, evapotransp, precipitacion])
+        fig.update_xaxes(
+            rangeslider={"visible": True, "autorange": True},
+            type="date",
+            autorange=True,
+        )
+        fig.update_layout(
+            legend={
+                "orientation": "h",
+                "yanchor": "bottom",
+                "y": 1.15,
+                "xanchor": "center",
+                "x": 0.5,
+            },
+            margin={"t": 100},
+        )
+        st.markdown(
+            f"<h5 style='text-align:center;'>Tendencia de balance hídrico ({selector} 1940 - 2026)</h5>",
+            unsafe_allow_html=True,
+        )
+        st.plotly_chart(fig)
 
     if not estados_seleccionados or not st.session_state.ciudades:
         st.warning("Selecciona un filtro")
     else:
+        crear_radiacion()
         crear_grafico_temp()
+        crear_brillo_solar()
+        balance_hidrico()
 
 
 contenedor()
