@@ -1,4 +1,4 @@
-from pages.Inicio import cargar_datos,cargar_ciudades
+from pages.Inicio import cargar_datos, cargar_ciudades
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
@@ -20,6 +20,7 @@ if "escala" not in st.session_state:
 # Cargar datos
 df_extraido = cargar_datos()
 df_ciudades_estados = cargar_ciudades()
+
 
 # Fragmentamos el contenedor para que no recargue toda la página.
 @st.fragment
@@ -563,7 +564,7 @@ def contenedor():
         st.plotly_chart(fig)
         st.divider()
 
-    def balance_hidrico():
+    def crear_balance_hidrico():
         fig = go.Figure()
         precipitacion = go.Scatter(
             x=df_filtro_escala_ag["eje_x"],
@@ -613,13 +614,41 @@ def contenedor():
         )
         st.plotly_chart(fig)
 
+    def crear_ola_calor():
+        fig = go.Figure()
+        barra_ola_calor = go.Bar(
+            x=df_filtro_escala_ag["eje_x"],
+            y=df_filtro_escala_ag["Heatwave_days"],
+            marker={
+                "color": df_filtro_escala_ag["Heatwave_days"],
+                "colorscale": "Oryel",
+            },
+            opacity=0.8,
+        )
+        fig.add_traces([barra_ola_calor])
+        fig.update_xaxes(
+            rangeslider={"visible": True, "autorange": True},
+            type="date",
+            autorange=True,
+        )
+        fig.update_layout(
+            margin={"t": 40, "b": 40},bargap=0.05
+        )
+        st.markdown(
+            f"<h5 style='text-align:center;'>Tendencia de días de Ola de Calor ({selector} 1940 - 2026)</h5>",
+            unsafe_allow_html=True,
+        )
+        st.plotly_chart(fig)
+        st.divider()
+
     if not estados_seleccionados or not st.session_state.ciudades:
         st.warning("Selecciona un filtro")
     else:
         crear_radiacion()
+        crear_ola_calor()
         crear_grafico_temp()
         crear_brillo_solar()
-        balance_hidrico()
+        crear_balance_hidrico()
 
 
 contenedor()
