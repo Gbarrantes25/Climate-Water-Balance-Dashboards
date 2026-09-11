@@ -632,7 +632,7 @@ def contenedor():
             autorange=True,
         )
         fig.update_layout(
-            margin={"t": 40, "b": 40},bargap=0.05
+            margin={"t": 40, "b": 40},bargap=0.05,barcornerradius=5
         )
         st.markdown(
             f"<h5 style='text-align:center;'>Tendencia de días de Ola de Calor ({selector} 1940 - 2026)</h5>",

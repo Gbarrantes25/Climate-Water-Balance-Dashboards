@@ -183,7 +183,7 @@ def contenedor():
             # opacity=0.5,
         )
         fig.add_traces([barras])
-        fig.update_layout(margin={"t": 25, "b": 25}, height=400)
+        fig.update_layout(margin={"t": 25, "b": 25}, height=400,barcornerradius=5)
         col1.markdown(
             f"<h5 style='text-align:center;'>10 Ciudades con mayor Radiación Solar ({selector})</h5>",
             unsafe_allow_html=True,
@@ -203,7 +203,7 @@ def contenedor():
             opacity=0.8,
         )
         fig.add_traces([barras])
-        fig.update_layout(margin={"t": 25, "b": 25}, height=400)
+        fig.update_layout(margin={"t": 25, "b": 25}, height=400,barcornerradius=5)
         col2.markdown(
             f"<h5 style='text-align:center;'>10 Ciudades con menor Radiación Solar ({selector})</h5>",
             unsafe_allow_html=True,
@@ -257,7 +257,7 @@ def contenedor():
             opacity=0.8,
         )
         fig.add_traces([barras])
-        fig.update_layout(margin={"t": 25, "b": 25}, height=400)
+        fig.update_layout(margin={"t": 25, "b": 25}, height=400,barcornerradius=5)
         st.markdown(
             f"<h5 style='text-align:center;'>10 Ciudades con menor Temperatura ({selector})</h5>",
             unsafe_allow_html=True,
@@ -274,7 +274,7 @@ def contenedor():
             opacity=0.5,
         )
         fig.add_traces([barras])
-        fig.update_layout(margin={"t": 25, "b": 25}, height=400)
+        fig.update_layout(margin={"t": 25, "b": 25}, height=400,barcornerradius=5)
         st.markdown(
             f"<h5 style='text-align:center;'>10 Ciudades con mayor Temperatura ({selector})</h5>",
             unsafe_allow_html=True,
@@ -332,9 +332,8 @@ def contenedor():
                 "Ciudad: %{customdata[2]}<br>Estado: %{customdata[0]}<br>Días %{customdata[1]}<extra></extra>"
             ),
         )
-        fig.update_layout(margin={"t": 25, "b": 25})
+        fig.update_layout(margin={"t": 25, "b": 25},bargap=0.6,barcornerradius=5,autosize=True)
         fig.add_traces([dias_calor])
-        fig.update_layout(autosize=True)
         st.markdown(
             f"<h5 style='text-align:center;'>Las 10 ciudades con más días de ola de calor ({selector})</h5>",
             unsafe_allow_html=True,
@@ -374,7 +373,7 @@ def contenedor():
             opacity=0.7,
         )
         fig.add_traces([barras])
-        fig.update_layout(margin={"t": 15}, height=400)
+        fig.update_layout(margin={"t": 15}, height=400,barcornerradius=5)
         st.markdown(
             f"<h5 style='text-align:center;'>Las 10 ciudades con mayor déficit hídrico ({selector})</h5>",
             unsafe_allow_html=True,
@@ -396,7 +395,7 @@ def contenedor():
             opacity=0.7,
         )
         fig.add_traces([barras])
-        fig.update_layout(margin={"t": 15}, height=400)
+        fig.update_layout(margin={"t": 15}, height=400,barcornerradius=5)
         st.markdown(
             f"<h5 style='text-align:center;'>Las 10 ciudades con mayor superávit hídrico crítico ({selector})</h5>",
             unsafe_allow_html=True,
@@ -416,7 +415,7 @@ def contenedor():
             opacity=0.7,
         )
         fig.add_traces([barras])
-        fig.update_layout(margin={"t": 15}, height=400)
+        fig.update_layout(margin={"t": 15}, height=400,barcornerradius=5)
         st.markdown(
             f"<h5 style='text-align:center;'>Las ciudades con mayor balance hídrico ({selector})</h5>",
             unsafe_allow_html=True,
