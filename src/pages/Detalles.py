@@ -233,6 +233,7 @@ def contenedor():
     barras_top_radiacion()
     barras_bottom_radiacion()
     st.divider()
+    st.divider()
     crear_mapa_temperatura()
     col1, col2 = st.columns(2)
     with col1:
