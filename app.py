@@ -22,7 +22,7 @@ inicio = st.Page(dir_inicio, title="Inicio", default=True)
 general = st.Page(dir_anual, title="General")
 ciudades = st.Page(dir_ciudades, title="Estados & Ciudades")
 detalles = st.Page(dir_detalles, title="Detalles")
-documentacion = st.Page("https://github.com/Gbarrantes25", title="Documentación")
+documentacion = st.Page("https://github.com/Gbarrantes25/Climate-Water-Balance-Dashboards", title="Documentación")
 
 pg = st.navigation(
     [inicio, general, ciudades, detalles, documentacion],
