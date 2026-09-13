@@ -128,20 +128,41 @@ def contenedor():
 
         fig.update_layout(
             height=500,
-            map={"zoom": 3.2, "center": {"lat": 22, "lon": 80}},
+            map={"zoom": 3, "center": {"lat": 22, "lon": 80}},
             margin={"t": 25, "b": 25},
         )
         st.markdown(
-            f"<h5 style='text-align:center;'>Análisis Geográfico de Radiación Solar ({selector})</h5>",
+            f"<h5 style='text-align:center;'>Mapa de Dispersión Geográfica de Radiación Solar ({selector})</h5>",
             unsafe_allow_html=True,
         )
         st.plotly_chart(fig, use_container_width=True)
+        with st.popover("Hallazgos", icon="🔍"):
+            st.table(
+                border=True,
+                data=[
+                    ["Temporada", "Observación actual", "vs 2025"],
+                    [
+                        "Total",
+                        "Hay una concentración de radiación en el centro y sur del país.",
+                        "El año pasado la concentración de radiación se dió mayormente en el sur del país.",
+                    ],
+                    [
+                        "Monzón",
+                        "La concentración de radiación se da fuertemente en el norte y un poco al sur del país.",
+                        "El año pasado la concrentración de radiación en el norte fue menor y con menos intensidad.",
+                    ],
+                    [
+                        "Sequía",
+                        "La parte central de India continental tiene una radiación más profunda.",
+                        "El año pasado la concentración de radiaicón se dió más al oeste y sur del país.",
+                    ],
+                ],
+                width="content",
+            )
 
-    df_ciudades_top_radiacion = (
-        df_ciudad_ag.sort_values("Radiacion", ascending=True)[["City", "Radiacion"]]
-        .tail(10)
-        .reset_index(drop=True)
-    )
+    df_ciudades_top_radiacion = df_ciudad_ag.sort_values("Radiacion", ascending=True)[
+        ["State", "City", "Radiacion"]
+    ].reset_index(drop=True)
 
     df_ciudades_bottom_radiacion = (
         df_ciudad_ag.sort_values("Radiacion", ascending=False)[["City", "Radiacion"]]
@@ -149,11 +170,9 @@ def contenedor():
         .reset_index(drop=True)
     )
 
-    df_ciudades_top_temp = (
-        df_ciudad_ag.sort_values("Temp_median", ascending=True)[["City", "Temp_median"]]
-        .tail(10)
-        .reset_index(drop=True)
-    )
+    df_ciudades_top_temp = df_ciudad_ag.sort_values("Temp_median", ascending=True)[
+        ["State", "City", "Temp_median"]
+    ].reset_index(drop=True)
 
     df_ciudades_bottom_temp = (
         df_ciudad_ag.sort_values("Temp_median", ascending=False)[
@@ -170,45 +189,66 @@ def contenedor():
         .reset_index(drop=True)
     )
 
-    def barras_top_radiacion():
+    def scatter_radiacion():
         fig = go.Figure()
-        barras = go.Bar(
+        barras = go.Scatter(
             y=df_ciudades_top_radiacion["City"],
             x=df_ciudades_top_radiacion["Radiacion"],
-            orientation="h",
             marker={
                 "color": df_ciudades_top_radiacion["Radiacion"],
-                "colorscale": [[0.0, "#FF8000"], [0.5, "#FF0000"], [1, "#750000"]],
+                "colorscale": "YlOrBr",
+                "size": df_ciudades_top_radiacion["Radiacion"] * 0.5,
+                "colorbar": {"title": "MJ/m²"},
+                "showscale": True,
             },
-            # opacity=0.5,
+            mode="markers+text",
+            textposition="middle left",
+            text=df_ciudades_top_radiacion["City"],
+            textfont={"size": 9.5},
+            name="Radiación Mj/m²",
+            customdata=df_ciudades_top_radiacion[["State", "City", "Radiacion"]],
+            hovertemplate="<b>Radiación:</b> %{customdata[2]:.2f}<br><b>Ciudad:</b> %{customdata[1]}<br><b>Estado:</b> %{customdata[0]}",
         )
+        fig.add_vline(x=20, line_dash="dot", line_color="gray", line_width=2)
         fig.add_traces([barras])
-        fig.update_layout(margin={"t": 25, "b": 25}, height=400,barcornerradius=5)
-        col1.markdown(
-            f"<h5 style='text-align:center;'>10 Ciudades con mayor Radiación Solar ({selector})</h5>",
+        fig.update_layout(
+            margin={"t": 25, "b": 25},
+            height=600,
+            yaxis={"title": "Ciudades", "showgrid": False, "showticklabels": False},
+            autosize=True,
+        )
+        st.markdown(
+            f"<h5 style='text-align:center;'>Ciudades Fuera del Umbral de Radiación Solar ({selector})</h5>",
             unsafe_allow_html=True,
         )
-        col1.plotly_chart(fig)
+        st.plotly_chart(fig)
+        with st.popover("Hallazgos", icon="🔍"):
+            st.table(
+                border=True,
+                data=[
+                    ["Temporada", "Actual", "vs 2025", "Observaciones"],
+                    [
+                        "Total",
+                        "39 ciudades superaron el umbral.",
+                        "4 ciudades superaron el umbral.",
+                        "Este año hay 78% de ciudades superaron el límite de radiación permitida, y el año pasado solo fue solo un 8%. Es el pico más alto en la historia.",
+                    ],
+                    [
+                        "Monzón",
+                        "23 ciudades superaron el umbral.",
+                        "4 ciudades superaron el umbral.",
+                        "Este año solo el 46% frente al 8% (del 2025) de ciudades superaron el umbral.",
+                    ],
+                    [
+                        "Sequía",
+                        "37 ciudades superaron el umbral.",
+                        "11 ciudades superaron el umbral.",
+                        "Este año hubo 74% frente al 22% (2025) de ciudades que excedieron el límite.",
+                    ],
+                ],
+                width="content",
+            )
 
-    def barras_bottom_radiacion():
-        fig = go.Figure()
-        barras = go.Bar(
-            y=df_ciudades_bottom_radiacion["City"],
-            x=df_ciudades_bottom_radiacion["Radiacion"],
-            orientation="h",
-            marker={
-                "color": df_ciudades_bottom_radiacion["Radiacion"],
-                "colorscale": [[0.0, "#FFF52E"], [0.5, "#FFCC8A"], [1, "#FF940A"]],
-            },
-            opacity=0.8,
-        )
-        fig.add_traces([barras])
-        fig.update_layout(margin={"t": 25, "b": 25}, height=400,barcornerradius=5)
-        col2.markdown(
-            f"<h5 style='text-align:center;'>10 Ciudades con menor Radiación Solar ({selector})</h5>",
-            unsafe_allow_html=True,
-        )
-        col2.plotly_chart(fig)
 
     def crear_mapa_temperatura():
         fig = go.Figure(
@@ -244,39 +284,38 @@ def contenedor():
         )
         st.plotly_chart(fig, use_container_width=True)
 
-    def barras_bottom_temperatura():
-        fig = go.Figure()
-        barras = go.Bar(
-            y=df_ciudades_bottom_temp["City"],
-            x=df_ciudades_bottom_temp["Temp_median"],
-            orientation="h",
-            marker={
-                "color": df_ciudades_bottom_temp["Temp_median"],
-                "colorscale": "RdYlBu_r",
-            },
-            opacity=0.8,
-        )
-        fig.add_traces([barras])
-        fig.update_layout(margin={"t": 25, "b": 25}, height=400,barcornerradius=5)
-        st.markdown(
-            f"<h5 style='text-align:center;'>10 Ciudades con menor Temperatura ({selector})</h5>",
-            unsafe_allow_html=True,
-        )
-        st.plotly_chart(fig)
-
     def barras_top_temperatura():
         fig = go.Figure()
-        barras = go.Bar(
+        barras = go.Scatter(
             y=df_ciudades_top_temp["City"],
             x=df_ciudades_top_temp["Temp_median"],
-            orientation="h",
-            marker={"color": "red"},
-            opacity=0.5,
+            mode="markers+text",
+            marker={
+                "color": df_ciudades_top_temp["Temp_median"],
+                "colorscale": "RdYlBu_r",
+                "colorbar": {"title": "°C"},
+                "size": df_ciudades_top_temp["Temp_median"].abs() * 0.4,
+                "showscale": True,
+            },
+            textposition="middle left",
+            text=df_ciudades_top_temp["City"],
+            textfont={"size": 9.5},
+            name="Temperatura °C",
+            customdata=df_ciudades_top_temp[["State", "City", "Temp_median"]],
+            hovertemplate="<b>Temperatura:</b> %{customdata[2]:.1f}<br><b>Ciudad:</b> %{customdata[1]}<br><b>Estado:</b> %{customdata[0]}",
         )
+        fig.add_vline(x=0, line_dash="dot", line_color="steelblue", line_width=2)
+        fig.add_vline(x=17, line_dash="dot", line_color="orange", line_width=2)
+        fig.add_vline(x=25, line_dash="dot", line_color="red", line_width=2)
         fig.add_traces([barras])
-        fig.update_layout(margin={"t": 25, "b": 25}, height=400,barcornerradius=5)
+        fig.update_layout(
+            margin={"t": 25, "b": 25},
+            height=600,
+            yaxis={"title": "Ciudades", "showgrid": False, "showticklabels": False},
+            autosize=True,
+        )
         st.markdown(
-            f"<h5 style='text-align:center;'>10 Ciudades con mayor Temperatura ({selector})</h5>",
+            f"<h5 style='text-align:center;'>Ciudades con mayor Temperatura °C ({selector})</h5>",
             unsafe_allow_html=True,
         )
         st.plotly_chart(fig)
@@ -332,7 +371,9 @@ def contenedor():
                 "Ciudad: %{customdata[2]}<br>Estado: %{customdata[0]}<br>Días %{customdata[1]}<extra></extra>"
             ),
         )
-        fig.update_layout(margin={"t": 25, "b": 25},bargap=0.6,barcornerradius=5,autosize=True)
+        fig.update_layout(
+            margin={"t": 25, "b": 25}, bargap=0.6, barcornerradius=5, autosize=True
+        )
         fig.add_traces([dias_calor])
         st.markdown(
             f"<h5 style='text-align:center;'>Las 10 ciudades con más días de ola de calor ({selector})</h5>",
@@ -348,7 +389,8 @@ def contenedor():
     )
 
     df_ciudades_top_critico = (
-        df_ciudad_ag.sort_values("Superavit_critico_hidrico", ascending=True)
+        df_ciudad_ag.loc[df_ciudad_ag["Superavit_critico_hidrico"] > 0]
+        .sort_values("Superavit_critico_hidrico", ascending=True)
         .tail(10)
         .reset_index(drop=True)
     )
@@ -366,19 +408,22 @@ def contenedor():
             y=df_ciudades_top_deficit["City"],
             x=df_ciudades_top_deficit["Deficit_hidrico"].abs(),
             orientation="h",
-            marker={"color": "orange"},
+            marker={"color": "#FCDF9A"},
             name="Déficit Hídrico",
             customdata=df_ciudades_top_deficit[["State", "City", "Deficit_hidrico"]],
-            hovertemplate="Valor: %{customdata[2]:.2f}<br>Ciudad: %{customdata[1]}<br>Estado: %{customdata[0]}",
-            opacity=0.7,
+            hovertemplate="Valor: %{customdata[2]:.2f} mm<br>Ciudad: %{customdata[1]}<br>Estado: %{customdata[0]}",
+            opacity=1,
         )
         fig.add_traces([barras])
-        fig.update_layout(margin={"t": 15}, height=400,barcornerradius=5)
+        fig.update_layout(margin={"t": 15}, height=400, barcornerradius=5)
         st.markdown(
-            f"<h5 style='text-align:center;'>Las 10 ciudades con mayor déficit hídrico ({selector})</h5>",
+            f"<h5 style='text-align:center;'>Ciudades con mayor déficit hídrico ({selector})</h5>",
             unsafe_allow_html=True,
         )
-        st.plotly_chart(fig)
+        if df_ciudades_top_deficit.empty:
+            st.warning("Sin datos disponibles")
+        else:
+            st.plotly_chart(fig)
 
     def barras_critico():
         fig = go.Figure()
@@ -386,21 +431,24 @@ def contenedor():
             y=df_ciudades_top_critico["City"],
             x=df_ciudades_top_critico["Superavit_critico_hidrico"],
             orientation="h",
-            marker={"color": "#2F7FDA"},
+            marker={"color": "#2A2F7C"},
             name="Superávit Crítico",
             customdata=df_ciudades_top_critico[
                 ["State", "City", "Superavit_critico_hidrico"]
             ],
-            hovertemplate="Valor: %{customdata[2]:.2f}<br>Ciudad: %{customdata[1]}<br>Estado: %{customdata[0]}",
+            hovertemplate="Valor: %{customdata[2]:.2f} mm<br>Ciudad: %{customdata[1]}<br>Estado: %{customdata[0]}",
             opacity=0.7,
         )
         fig.add_traces([barras])
-        fig.update_layout(margin={"t": 15}, height=400,barcornerradius=5)
+        fig.update_layout(margin={"t": 15}, height=400, barcornerradius=5)
         st.markdown(
-            f"<h5 style='text-align:center;'>Las 10 ciudades con mayor superávit hídrico crítico ({selector})</h5>",
+            f"<h5 style='text-align:center;'>Ciudades con mayor superávit hídrico crítico ({selector})</h5>",
             unsafe_allow_html=True,
         )
-        st.plotly_chart(fig)
+        if df_ciudades_top_critico.empty:
+            st.warning("Sin datos disponibles")
+        else:
+            st.plotly_chart(fig)
 
     def barras_superavit():
         fig = go.Figure()
@@ -408,50 +456,120 @@ def contenedor():
             y=df_ciudades_top_balance["City"],
             x=df_ciudades_top_balance["Superavit_hidrico"],
             orientation="h",
-            marker={"color": "#369B4F"},
+            marker={"color": "#75EB92"},
             name="Superávit Hídrico",
             customdata=df_ciudades_top_balance[["State", "City", "Superavit_hidrico"]],
-            hovertemplate="Valor: %{customdata[2]:.2f}<br>Ciudad: %{customdata[1]}<br>Estado: %{customdata[0]}",
+            hovertemplate="Valor: %{customdata[2]:.2f} mm<br>Ciudad: %{customdata[1]}<br>Estado: %{customdata[0]}",
             opacity=0.7,
         )
         fig.add_traces([barras])
-        fig.update_layout(margin={"t": 15}, height=400,barcornerradius=5)
+        fig.update_layout(margin={"t": 15}, height=400, barcornerradius=5)
         st.markdown(
-            f"<h5 style='text-align:center;'>Las ciudades con mayor balance hídrico ({selector})</h5>",
+            f"<h5 style='text-align:center;'>Ciudades con balance hídrico ({selector})</h5>",
+            unsafe_allow_html=True,
+        )
+        if df_ciudades_top_balance.empty:
+            st.warning("Sin datos disponibles")
+        else:
+            st.plotly_chart(fig)
+
+    def histogram_temp():
+        start_temp = np.floor(df_ciudad_ag["Temp_median"].min())
+        end_temp = np.ceil(df_ciudad_ag["Temp_median"].max())
+        size_temp = (end_temp - start_temp) / 3
+        fig = go.Figure(
+            go.Histogram(
+                x=df_ciudad_ag["Temp_median"],
+                xbins={"start": start_temp, "end": end_temp, "size": size_temp},
+                marker={"color": "red"},
+                autobinx=False,
+                opacity=0.5,
+            )
+        )
+        fig.update_layout(
+            bargap=0.02, barcornerradius=5, height=500, margin={"t": 25, "b": 25}
+        )
+        st.markdown(
+            f"<h5 style='text-align:center;'>Distribución de Ciudades por Temp ({selector})</h5>",
             unsafe_allow_html=True,
         )
         st.plotly_chart(fig)
 
-    crear_mapa_radiacion()
-    col1, col2 = st.columns(2)
+    def histogram_radiacion():
+        start_temp = np.floor(df_ciudad_ag["Radiacion"].min())
+        end_temp = np.ceil(df_ciudad_ag["Radiacion"].max())
+        size_temp = (end_temp - start_temp) / 3
+        fig = go.Figure(
+            go.Histogram(
+                x=df_ciudad_ag["Radiacion"],
+                xbins={"start": start_temp, "end": end_temp, "size": size_temp},
+                marker={"color": "orange"},
+                autobinx=False,
+                opacity=0.8,
+            )
+        )
+        fig.update_layout(
+            bargap=0.02, barcornerradius=5, height=500, margin={"t": 25, "b": 25}
+        )
+        st.markdown(
+            f"<h5 style='text-align:center;'>Densidad de Ciudades por Radiación ({selector})</h5>",
+            unsafe_allow_html=True,
+        )
+        st.plotly_chart(fig)
+        with st.popover("Hallazgos", icon="🔍"):
+            st.table(
+                border=True,
+                data=[
+                    ["Temporada", "Actual", "vs 2025", "Observaciones"],
+                    [
+                        "Total",
+                        "33 ciudades → 21-24.9 Mj/m² y 13 de ciudades → 17-20.9 Mj/m²",
+                        "15 ciudades → 18.7-21.9 Mj/m² y 34 ciudades → 15.4-18.6 Mj/m²",
+                        "En el año actual hay una distribución más densa en el rango de mayor radiación, a diferencia del año pasado que se concentró en el rango intermedio (2024 también mantuvo el mismo comportamiento).",
+                    ],
+                    [
+                        "Monzón",
+                        "13 ciudades → 22-26.9 Mj/m² y 23 ciudades → 17-21.9 Mj/m²",
+                        "4 ciudades → 20-23.9 Mj/m² y 18 ciudades → 16-19.9 Mj/²",
+                        "El año actual hay una distribución mayor de radiación por encima de 20 Mj/m² rompiendo el patrón por debajo de 4 ciudades afectadas de los últimos 5 años.",
+                    ],
+                    [
+                        "Sequía",
+                        "35 ciudades → 21-24.9 Mj/m² y 11 ciudades → 17-20.9 Mj/m²",
+                        "29 ciudades → 18.67-21.99 Mj/m² y 20 ciudades → 15.34-18.66 Mj/m²",
+                        "La distribución de ciudades en el rango superior de radiación se mantiene a comparación de otros años, lo único que varía son los rangos de radiación un poco más de 2 Mj/m².",
+                    ],
+                ],
+                width="content",
+            )
+
+    st.subheader("1. Radiación", divider="gray", wrap=True)
+    col1, col2 = st.columns([0.6, 0.4])
     with col1:
-        barras_top_radiacion()
+        crear_mapa_radiacion()
     with col2:
-        barras_bottom_radiacion()
-    st.divider()
-    st.divider()
+        histogram_radiacion()
+    scatter_radiacion()
+    st.subheader("2. Días de Ola de Calor", divider="gray", wrap=True)
     crear_mapa_dias_calor()
     barras_top_dias_calor()
-    st.divider()
-    st.divider()
-    crear_mapa_temperatura()
-    col1, col2 = st.columns(2)
+    st.subheader("3. Temperatura", divider="gray", wrap=True)
+    col1, col2 = st.columns([0.6,0.4])
     with col1:
-        barras_top_temperatura()
+        crear_mapa_temperatura()
     with col2:
-        barras_bottom_temperatura()
-    st.divider()
-    st.divider()
+        histogram_temp()
+    barras_top_temperatura()
+    st.subheader("4. Balance Hídrico", divider="gray", wrap=True)
     col1, col2, col3 = st.columns(3)
     with col1:
         barras_deficit()
     with col2:
         barras_critico()
     with col3:
-        if df_ciudades_top_balance.empty:
-            st.write("")
-        else:
-            barras_superavit()
+        barras_superavit()
+
+    st.write(df_ciudad_ag)
 
 
 contenedor()

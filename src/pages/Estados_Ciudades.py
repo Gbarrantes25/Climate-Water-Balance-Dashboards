@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from pathlib import Path
+import plotly.colors as pc
 
 # Título.
 st.header(
@@ -571,19 +572,17 @@ def contenedor():
             y=df_filtro_escala_ag["Precipitation_total"],
             name="Total precipitaciones (mm)",
             fill="tozeroy",
-            fillcolor="#498ee8",
-            line={"color": "#498ee8"},
-            mode="lines",
+            fillcolor=f"rgba{(*pc.hex_to_rgb('#2A2F7C'),0.7)}",
+            mode="none"
         )
         evapotransp = go.Scatter(
             x=df_filtro_escala_ag["eje_x"],
             y=df_filtro_escala_ag["Ref_Evapotransp_total"],
             name="Total Evapotranspiración (mm)",
             fill="tozeroy",
-            fillcolor="#a2caf3",
-            line={"color": "#a2caf3"},
+            fillcolor="#CACCED",
+            line={"color": "#CACCED"},
             mode="lines",
-            opacity=0.3,
         )
         limite = go.Scatter(
             x=df_filtro_escala_ag["eje_x"],

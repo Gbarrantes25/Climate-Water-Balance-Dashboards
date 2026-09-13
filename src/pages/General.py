@@ -3,6 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 from pages.Inicio import cargar_datos
+import plotly.colors as pc
 
 # Crear título.
 st.header(
@@ -591,20 +592,18 @@ def contenedor():
     precipitacion = go.Scatter(
         x=df_ag["Year"],
         y=df_ag["Precipitation_total"],
-        marker_color="#498ee8",
         name="Total Precipitación (mm)",
         fill="tozeroy",
-        fillcolor="#498ee8",
-        opacity=0.3,
+        fillcolor=f"rgba{(*pc.hex_to_rgb('#2A2F7C'),0.7)}",
+        mode="none"
     )
     evapotransp = go.Scatter(
         x=df_ag["Year"],
         y=df_ag["Ref_Evapotransp_total"],
-        marker_color="#a2caf3",
+        marker_color="#CACCED",
         name="Total Evapotranspiración (mm)",
         fill="tozeroy",
-        fillcolor="#a2caf3",
-        opacity=0.3,
+        fillcolor="#CACCED",
     )
     limite = go.Scatter(
         x=df_ag["Year"],
@@ -684,7 +683,7 @@ def contenedor():
         z=df_ag_corr.values,
         x=df_ag_corr.index,
         y=df_ag_corr.columns,
-        colorscale="Blues",
+        colorscale=[[0.0,"#ECEDF8"],[0.5,"#636ACA"],[1,"#2A2F7C"]],
         text=df_ag_corr.values.round(2),
         texttemplate="<b>%{text}</b>",
     )
