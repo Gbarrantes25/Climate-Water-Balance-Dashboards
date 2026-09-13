@@ -569,7 +569,4 @@ def contenedor():
     with col3:
         barras_superavit()
 
-    st.write(df_ciudad_ag)
-
-
 contenedor()
