@@ -92,6 +92,58 @@ def contenedor():
     ]
     matriz_colores = np.select(condiciones_colores, colores, default="white")
 
+    df_ciudades_top_radiacion = df_ciudad_ag.sort_values("Radiacion", ascending=True)[
+        ["State", "City", "Radiacion"]
+    ].reset_index(drop=True)
+
+    df_ciudades_top_temp = df_ciudad_ag.sort_values("Temp_median", ascending=True)[
+        ["State", "City", "Temp_median"]
+    ].reset_index(drop=True)
+
+    df_ciudades_top_heatwave = (
+        df_ciudad_ag.loc[df_ciudad_ag["Heatwave_day"] > 0]
+        .sort_values("Heatwave_day", ascending=False)
+        .head(10)
+        .reset_index(drop=True)
+    )
+
+    df_ciudad_porcentaje = (
+        df_ciudad_ag.loc[
+            :,
+            [
+                "State",
+                "City",
+                "Precipitacion",
+                "Evapotranspiracion",
+                "Variance_mm",
+                "Balance_hidrico",
+            ],
+        ]
+        .assign(
+            Porcentaje_desviacion=(
+                lambda x: ((x["Precipitacion"] / x["Evapotranspiracion"]) - 1) * 100
+            )
+        )
+        .sort_values(by="Porcentaje_desviacion")
+    )
+
+    df_ciudad_porcentaje["Deficit"] = np.where(
+        df_ciudad_porcentaje["Porcentaje_desviacion"] < 0,
+        round(df_ciudad_porcentaje["Porcentaje_desviacion"], 1),
+        np.nan,
+    )
+    df_ciudad_porcentaje["Superavit"] = np.where(
+        (df_ciudad_porcentaje["Porcentaje_desviacion"] >= 0)
+        & (df_ciudad_porcentaje["Porcentaje_desviacion"] <= 7),
+        round(df_ciudad_porcentaje["Porcentaje_desviacion"], 1),
+        np.nan,
+    )
+    df_ciudad_porcentaje["Critico"] = np.where(
+        df_ciudad_porcentaje["Porcentaje_desviacion"] > 7,
+        round(df_ciudad_porcentaje["Porcentaje_desviacion"], 1),
+        np.nan,
+    )
+
     def crear_mapa_radiacion():
         fig = go.Figure(
             go.Scattermap(
@@ -113,8 +165,8 @@ def contenedor():
                 },
                 hovertemplate=(
                     "<b>%{text}</b><br>"
-                    "Estado: %{customdata[0]}<br>"
-                    "Radiación: %{customdata[1]:.1f} MJ/m²"
+                    "<b>Estado: </b>%{customdata[0]}<br>"
+                    "<b>Radiación: </b>%{customdata[1]:.1f} MJ/m²"
                     "<extra></extra>"
                 ),
             )
@@ -124,7 +176,7 @@ def contenedor():
             height=500,
             map={"zoom": 3, "center": {"lat": 22, "lon": 80}},
             margin={"t": 25, "b": 25},
-            autosize=True
+            autosize=True,
         )
         st.markdown(
             f"<h5 style='text-align:center;'>Mapa de Dispersión Geográfica de Radiación Solar ({selector})</h5>",
@@ -155,21 +207,6 @@ def contenedor():
                 width="content",
             )
 
-    df_ciudades_top_radiacion = df_ciudad_ag.sort_values("Radiacion", ascending=True)[
-        ["State", "City", "Radiacion"]
-    ].reset_index(drop=True)
-
-    df_ciudades_top_temp = df_ciudad_ag.sort_values("Temp_median", ascending=True)[
-        ["State", "City", "Temp_median"]
-    ].reset_index(drop=True)
-
-    df_ciudades_top_heatwave = (
-        df_ciudad_ag.loc[df_ciudad_ag["Heatwave_day"] > 0]
-        .sort_values("Heatwave_day", ascending=False)
-        .head(10)
-        .reset_index(drop=True)
-    )
-
     def scatter_radiacion():
         fig = go.Figure()
         barras = go.Scatter(
@@ -188,7 +225,7 @@ def contenedor():
             textfont={"size": 9.5},
             name="Radiación Mj/m²",
             customdata=df_ciudades_top_radiacion[["State", "City", "Radiacion"]],
-            hovertemplate="<b>Radiación:</b> %{customdata[2]:.2f}<br><b>Ciudad:</b> %{customdata[1]}<br><b>Estado:</b> %{customdata[0]}",
+            hovertemplate="<b>Radiación:</b> %{customdata[2]:.2f} Mj/m²<br><b>Ciudad:</b> %{customdata[1]}<br><b>Estado:</b> %{customdata[0]}",
         )
         fig.add_vline(
             x=20,
@@ -252,7 +289,7 @@ def contenedor():
                     "colorbar": {"orientation": "h"},
                 },
                 hovertemplate=(
-                    "<b>%{text}</b><br>Estado: %{customdata[0]}<br>Temperatura: %{customdata[1]:.1f} °C<extra></extra>"
+                    "<b>%{text}</b><br><b>Estado: </b>%{customdata[0]}<br><b>Temperatura: </b>%{customdata[1]:.1f} °C<extra></extra>"
                 ),
             )
         )
@@ -264,7 +301,7 @@ def contenedor():
                 "style": "carto-positron",
             },
             margin={"t": 25, "b": 25},
-            autosize=True
+            autosize=True,
         )
         st.markdown(
             f"<h5 style='text-align:center;'>Análisis Geográfico de Temperatura Media ({selector})</h5>",
@@ -344,7 +381,7 @@ def contenedor():
                     "colorbar": {"orientation": "h"},
                 },
                 hovertemplate=(
-                    "<b>%{text}</b><br>Estado: %{customdata[0]}<br>Días de Olas de Calor: %{customdata[1]:.0f}<extra></extra>"
+                    "<b>%{text}</b><br><b>Estado: </b>%{customdata[0]}<br><b>Días de Olas de Calor: </b>%{customdata[1]:.0f}<extra></extra>"
                 ),
             )
         )
@@ -377,7 +414,7 @@ def contenedor():
             opacity=0.8,
             customdata=df_ciudades_top_heatwave[["State", "Heatwave_day", "City"]],
             hovertemplate=(
-                "Ciudad: %{customdata[2]}<br>Estado: %{customdata[0]}<br>Días %{customdata[1]}<extra></extra>"
+                "<b>Ciudad: </b>%{customdata[2]}<br><b>Estado: </b>%{customdata[0]}<br><b>Días: </b>%{customdata[1]}<extra></extra>"
             ),
         )
         fig.update_layout(
@@ -389,43 +426,6 @@ def contenedor():
             unsafe_allow_html=True,
         )
         st.plotly_chart(fig)
-
-    df_ciudad_porcentaje = (
-        df_ciudad_ag.loc[
-            :,
-            [
-                "State",
-                "City",
-                "Precipitacion",
-                "Evapotranspiracion",
-                "Variance_mm",
-                "Balance_hidrico",
-            ],
-        ]
-        .assign(
-            Porcentaje_desviacion=(
-                lambda x: ((x["Precipitacion"] / x["Evapotranspiracion"]) - 1) * 100
-            )
-        )
-        .sort_values(by="Porcentaje_desviacion")
-    )
-
-    df_ciudad_porcentaje["Deficit"] = np.where(
-        df_ciudad_porcentaje["Porcentaje_desviacion"] < 0,
-        round(df_ciudad_porcentaje["Porcentaje_desviacion"], 1),
-        np.nan,
-    )
-    df_ciudad_porcentaje["Superavit"] = np.where(
-        (df_ciudad_porcentaje["Porcentaje_desviacion"] >= 0)
-        & (df_ciudad_porcentaje["Porcentaje_desviacion"] <= 7),
-        round(df_ciudad_porcentaje["Porcentaje_desviacion"], 1),
-        np.nan,
-    )
-    df_ciudad_porcentaje["Critico"] = np.where(
-        df_ciudad_porcentaje["Porcentaje_desviacion"] > 7,
-        round(df_ciudad_porcentaje["Porcentaje_desviacion"], 1),
-        np.nan,
-    )
 
     def histogram_temp():
         start_temp = np.floor(df_ciudad_ag["Temp_median"].min())
@@ -441,7 +441,11 @@ def contenedor():
             )
         )
         fig.update_layout(
-            bargap=0.02, barcornerradius=5, height=500, margin={"t": 25, "b": 25},autosize=True
+            bargap=0.02,
+            barcornerradius=5,
+            height=500,
+            margin={"t": 25, "b": 25},
+            autosize=True,
         )
         st.markdown(
             f"<h5 style='text-align:center;'>Distribución de Ciudades por Temp ({selector})</h5>",
@@ -463,7 +467,11 @@ def contenedor():
             )
         )
         fig.update_layout(
-            bargap=0.02, barcornerradius=5, height=500, margin={"t": 25, "b": 25},autosize=True
+            bargap=0.02,
+            barcornerradius=5,
+            height=500,
+            margin={"t": 25, "b": 25},
+            autosize=True,
         )
         st.markdown(
             f"<h5 style='text-align:center;'>Densidad de Ciudades por Radiación ({selector})</h5>",
@@ -513,9 +521,9 @@ def contenedor():
                 opacity=0.5,
                 hovertemplate=(
                     "<b>%{text}</b><br>"
-                    "Estado Hídrico: %{customdata[2]}<br>"
-                    "Estado: %{customdata[0]}<br>"
-                    "Radiación: %{customdata[1]:.1f} MJ/m²"
+                    "<b>Estado Hídrico: </b>%{customdata[2]}<br>"
+                    "<b>Estado: </b>%{customdata[0]}<br>"
+                    "<b>Variación: </b>%{customdata[1]:.1f} mm"
                     "<extra></extra>"
                 ),
             )
@@ -525,7 +533,7 @@ def contenedor():
             height=500,
             map={"zoom": 3, "center": {"lat": 22, "lon": 80}},
             margin={"t": 25, "b": 25},
-            autosize=True
+            autosize=True,
         )
         st.markdown(
             f"<h5 style='text-align:center;'>Mapa de Dispersión Geográfica de Balance Hídrico ({selector})</h5>",
@@ -541,9 +549,16 @@ def contenedor():
             name="Déficit Hídrico",
             marker={"color": "orange", "size": 7.5},
             customdata=df_ciudad_porcentaje[
-                ["State", "City", "Porcentaje_desviacion", "Balance_hidrico"]
+                [
+                    "State",
+                    "City",
+                    "Porcentaje_desviacion",
+                    "Balance_hidrico",
+                    "Precipitacion",
+                    "Evapotranspiracion",
+                ]
             ],
-            hovertemplate="<b>Índice: </b>%{customdata[2]:.1f}%<br><b>Ciudad: </b>%{customdata[1]}</b><br><b>Estado: </b>%{customdata[0]}",
+            hovertemplate="<b>Índice: </b>%{customdata[2]:.1f}%<br><b>Ciudad: </b>%{customdata[1]}</b><br><b>Estado: </b>%{customdata[0]}<br><b>Precipitación: </b>%{customdata[4]:.2f} mm<br><b>Evapotranspiración: </b>%{customdata[5]:.2f} mm",
             mode="markers+text",
             textposition="middle left",
             text=df_ciudad_porcentaje["City"],
@@ -555,9 +570,16 @@ def contenedor():
             name="Superávit Hídrico",
             marker={"color": "green", "size": 9},
             customdata=df_ciudad_porcentaje[
-                ["State", "City", "Porcentaje_desviacion", "Balance_hidrico"]
+                [
+                    "State",
+                    "City",
+                    "Porcentaje_desviacion",
+                    "Balance_hidrico",
+                    "Precipitacion",
+                    "Evapotranspiracion",
+                ]
             ],
-            hovertemplate="<b>Índice: </b>%{customdata[2]:.1f}%<br><b>Ciudad: </b>%{customdata[1]}</b><br><b>Estado: </b>%{customdata[0]}",
+            hovertemplate="<b>Índice: </b>%{customdata[2]:.1f}%<br><b>Ciudad: </b>%{customdata[1]}</b><br><b>Estado: </b>%{customdata[0]},<br><b>Precipitación: </b>%{customdata[4]:.2f} mm<br><b>Evapotranspiración: </b>%{customdata[5]:.2f} mm",
             mode="markers+text",
             textposition="middle left",
             text=df_ciudad_porcentaje["City"],
@@ -569,9 +591,16 @@ def contenedor():
             name="Superávit Hídrico Crítico",
             marker={"color": "red", "size": 12},
             customdata=df_ciudad_porcentaje[
-                ["State", "City", "Porcentaje_desviacion", "Balance_hidrico"]
+                [
+                    "State",
+                    "City",
+                    "Porcentaje_desviacion",
+                    "Balance_hidrico",
+                    "Precipitacion",
+                    "Evapotranspiracion",
+                ]
             ],
-            hovertemplate="<b>Índice: </b>%{customdata[2]:.1f}%<br><b>Ciudad: </b>%{customdata[1]}</b><br><b>Estado: </b>%{customdata[0]}",
+            hovertemplate="<b>Índice: </b>%{customdata[2]:.1f}%<br><b>Ciudad: </b>%{customdata[1]}</b><br><b>Estado: </b>%{customdata[0]},<br><b>Precipitación: </b>%{customdata[4]:.2f} mm<br><b>Evapotranspiración: </b>%{customdata[5]:.2f} mm",
             mode="markers+text",
             textposition="middle left",
             text=df_ciudad_porcentaje["City"],
@@ -604,7 +633,7 @@ def contenedor():
             },
             yaxis={"title": "Ciudades", "showgrid": False, "showticklabels": False},
             height=750,
-            autosize=True
+            autosize=True,
         )
         st.markdown(
             f"<h5 style='text-align:center;'>Índice de Desviación Hídrica por Ciudad ({selector})</h5>",
@@ -612,25 +641,26 @@ def contenedor():
         )
         st.plotly_chart(fig)
 
-    st.subheader("1. Radiación", divider="gray", wrap=True)
+    st.subheader("Radiación", divider="gray", wrap=True)
     col1, col2 = st.columns([0.6, 0.4])
     with col1:
         crear_mapa_radiacion()
     with col2:
         histogram_radiacion()
     scatter_radiacion()
-    st.subheader("2. Días de Ola de Calor", divider="gray", wrap=True)
+    st.subheader("Días de Ola de Calor", divider="gray", wrap=True)
     crear_mapa_dias_calor()
     barras_top_dias_calor()
-    st.subheader("3. Temperatura", divider="gray", wrap=True)
+    st.subheader("Temperatura", divider="gray", wrap=True)
     col1, col2 = st.columns([0.6, 0.4])
     with col1:
         crear_mapa_temperatura()
     with col2:
         histogram_temp()
     barras_top_temperatura()
-    st.subheader("4. Balance Hídrico", divider="gray", wrap=True)
+    st.subheader("Balance Hídrico", divider="gray", wrap=True)
     crear_mapa_hidrico()
     crear_scatter_hidrico()
+
 
 contenedor()
