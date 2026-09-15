@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from pathlib import Path
 import plotly.colors as pc
+import numpy as np
 
 # Título.
 st.header(
@@ -371,10 +372,12 @@ def contenedor():
             df3["eje_x"] = pd.to_datetime(df3["Date"].dt.year.astype("str") + "-01-01")
             return df3
         elif radio == "Año-Trimestre":
-            df3["eje_x"] = df3["Date"].dt.to_period("Q").dt.to_timestamp()
+            df3["eje_x"] = df3["Date"].dt.to_period("Q").dt.end_time
             return df3
         else:
-            df3["eje_x"] = df3["Date"].dt.to_period("M").dt.to_timestamp()
+            df3["eje_x"] = df3["Date"].dt.strftime(
+                "%Y-%m"
+            )  # to_period("M").dt.end_time
             return df3
 
     df_filtro_escala = validar_escala()
@@ -409,45 +412,51 @@ def contenedor():
     df_filtro_escala_ag["Daylight_hrs_median"] = round(
         (df_filtro_escala_ag["Daylight_sec_median"] / 3600), 2
     )
+    df_filtro_escala_ag["Evapotransp_limite"] = (
+        df_filtro_escala_ag["Ref_Evapotransp_total"] * 1.07
+    )
 
     def crear_radiacion():
-        aceptable = [20] * len(df_filtro_escala_ag["eje_x"])
         fig = go.Figure()
+        fig.add_hline(
+            y=20,
+            line_color="orange",
+            line_dash="dot",
+            line_width=0.5,
+            annotation_text="Umbral",
+            annotation_position="top right",
+        )
         radiacion_min = go.Scatter(
             x=df_filtro_escala_ag["eje_x"],
             y=df_filtro_escala_ag["Solar_Radiation_min"],
-            name="Mínimo mj/m²",
+            name="Mínimo",
             line_shape="spline",
-            opacity=0.2,
+            opacity=0.4,
             line={"color": "skyblue"},
-        )
-        radiacion_aceptable = go.Scatter(
-            x=df_filtro_escala_ag["eje_x"],
-            y=aceptable,
-            name="Aceptable mj/m²",
-            mode="lines",
-            line={"dash": "dot", "color": "orange"},
-            opacity=0.7,
+            customdata=df_filtro_escala_ag[["eje_x", "Solar_Radiation_min"]],
+            hovertemplate="<b>%{customdata[0]}</b><br><b>Radiación Mínima: </b>%{customdata[1]:.1f} Mj/m²",
         )
         radiacion_media = go.Scatter(
             x=df_filtro_escala_ag["eje_x"],
             y=df_filtro_escala_ag["Solar_Radiation_median"],
-            name="Promedio mj/m²",
+            name="Media",
             mode="markers",
             line_shape="spline",
             marker={"color": "green"},
+            customdata=df_filtro_escala_ag[["eje_x", "Solar_Radiation_median"]],
+            hovertemplate="<b>%{customdata[0]}</b><br><b>Radiación Media: </b>%{customdata[1]:.1f} Mj/m²",
         )
         radiacion_max = go.Scatter(
             x=df_filtro_escala_ag["eje_x"],
             y=df_filtro_escala_ag["Solar_Radiation_max"],
-            name="Máximo mj/m²",
+            name="Máximo",
             line_shape="spline",
-            opacity=0.2,
+            opacity=0.4,
             line={"color": "red"},
+            customdata=df_filtro_escala_ag[["eje_x", "Solar_Radiation_max"]],
+            hovertemplate="<b>%{customdata[0]}</b><br><b>Radiación Máxima: </b>%{customdata[1]:.1f} Mj/m²",
         )
-        fig.add_traces(
-            [radiacion_min, radiacion_aceptable, radiacion_media, radiacion_max]
-        )
+        fig.add_traces([radiacion_min, radiacion_media, radiacion_max])
         fig.update_xaxes(
             rangeslider={"visible": True, "autorange": True},
             type="date",
@@ -475,26 +484,32 @@ def contenedor():
         temp_min = go.Scatter(
             x=df_filtro_escala_ag["eje_x"],
             y=df_filtro_escala_ag["Temp_Min"],
-            name="Mínimo °C",
+            name="Mínimo",
             line_shape="spline",
             line={"color": "skyblue"},
-            opacity=0.2,
+            opacity=0.4,
+            customdata=df_filtro_escala_ag[["eje_x", "Temp_Min"]],
+            hovertemplate="<b>%{customdata[0]}</b><br><b>Temperatura Mínima: </b>%{customdata[1]:.1f} C°",
         )
         temp_media = go.Scatter(
             x=df_filtro_escala_ag["eje_x"],
             y=df_filtro_escala_ag["Temp_Media"],
-            name="Promedio °C",
+            name="Media",
             line_shape="spline",
             mode="lines+markers",
             line={"color": "green", "dash": "dot"},
+            customdata=df_filtro_escala_ag[["eje_x", "Temp_Media"]],
+            hovertemplate="<b>%{customdata[0]}</b><br><b>Temperatura Media: </b>%{customdata[1]:.1f} C°",
         )
         temp_max = go.Scatter(
             x=df_filtro_escala_ag["eje_x"],
             y=df_filtro_escala_ag["Temp_Max"],
-            name="Máximo C°",
+            name="Máximo",
             line_shape="spline",
             line={"color": "red"},
-            opacity=0.2,
+            opacity=0.4,
+            customdata=df_filtro_escala_ag[["eje_x", "Temp_Max"]],
+            hovertemplate="<b>%{customdata[0]}</b><br><b>Temperatura Máxima: </b>%{customdata[1]:.1f} C°",
         )
 
         if radio == "Año-Mes":
@@ -533,6 +548,8 @@ def contenedor():
             name="Horas de brillo solar",
             line={"dash": "dot", "color": "green"},
             line_shape="spline",
+            customdata=df_filtro_escala_ag[["eje_x", "Sunshine_hrs_median"]],
+            hovertemplate="<b>%{customdata[0]}</b><br><b>Media Brillo Solar: </b>%{customdata[1]:.2f} hrs",
         )
         diurno = go.Scatter(
             x=df_filtro_escala_ag["eje_x"],
@@ -541,6 +558,8 @@ def contenedor():
             mode="lines",
             line={"color": "orange"},
             line_shape="spline",
+            customdata=df_filtro_escala_ag[["eje_x", "Daylight_hrs_median"]],
+            hovertemplate="<b>%{customdata[0]}</b><br><b>Duración Media del Día: </b>%{customdata[1]:.2f} hrs",
         )
         fig.add_traces([brillo_solar, diurno])
         fig.update_xaxes(
@@ -572,8 +591,10 @@ def contenedor():
             y=df_filtro_escala_ag["Precipitation_total"],
             name="Total precipitaciones (mm)",
             fill="tozeroy",
-            fillcolor=f"rgba{(*pc.hex_to_rgb('#2A2F7C'),0.7)}",
-            mode="none"
+            fillcolor=f"rgba{(*pc.hex_to_rgb('#2A2F7C'), 0.7)}",
+            mode="none",
+            customdata=df_filtro_escala_ag[["eje_x", "Precipitation_total"]],
+            hovertemplate="<b>%{customdata[0]}</b><br><b>Precipitación Total: </b>%{customdata[1]:.2f} mm",
         )
         evapotransp = go.Scatter(
             x=df_filtro_escala_ag["eje_x"],
@@ -583,13 +604,17 @@ def contenedor():
             fillcolor="#CACCED",
             line={"color": "#CACCED"},
             mode="lines",
+            customdata=df_filtro_escala_ag[["eje_x", "Ref_Evapotransp_total"]],
+            hovertemplate="<b>%{customdata[0]}</b><br><b>Evapotranspiración Total: </b>%{customdata[1]:.2f} mm",
         )
         limite = go.Scatter(
             x=df_filtro_escala_ag["eje_x"],
-            y=df_filtro_escala_ag["Ref_Evapotransp_total"] * 1.07,
+            y=df_filtro_escala_ag["Evapotransp_limite"],
             mode="lines",
             name="Límite de Superávit Hídrico (mm)",
             line={"color": "#b4d6f8", "dash": "dot"},
+            customdata=df_filtro_escala_ag[["eje_x", "Evapotransp_limite"]],
+            hovertemplate="<b>%{customdata[0]}</b><br><b>Límite: </b>%{customdata[1]:.2f} mm",
         )
         fig.add_traces([limite, evapotransp, precipitacion])
         fig.update_xaxes(
@@ -622,7 +647,10 @@ def contenedor():
                 "color": df_filtro_escala_ag["Heatwave_days"],
                 "colorscale": "Oryel",
             },
+            name="Ola de calor",
             opacity=0.8,
+            customdata=df_filtro_escala_ag[["eje_x", "Heatwave_days"]].astype("str"),
+            hovertemplate="<b>%{customdata[0]}</b><br><b>Días con Ola de Calor: </b>%{customdata[1]}",
         )
         fig.add_traces([barra_ola_calor])
         fig.update_xaxes(
@@ -630,9 +658,7 @@ def contenedor():
             type="date",
             autorange=True,
         )
-        fig.update_layout(
-            margin={"t": 40, "b": 40},bargap=0.05,barcornerradius=5
-        )
+        fig.update_layout(margin={"t": 40, "b": 40}, bargap=0.05, barcornerradius=5)
         st.markdown(
             f"<h5 style='text-align:center;'>Tendencia de días de Ola de Calor ({selector} 1940 - 2026)</h5>",
             unsafe_allow_html=True,

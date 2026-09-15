@@ -4,7 +4,9 @@ from pathlib import Path
 
 # Título
 st.header(
-    "Proyecto Climatológico y Balance Hídrico (India)", text_alignment="center", divider="gray"
+    "Proyecto Climatológico y Balance Hídrico (India)",
+    text_alignment="center",
+    divider="gray",
 )
 
 # Carpeta raíz
@@ -71,7 +73,9 @@ def cargar_datos():
         df_raw["reference_evapotranspiration_mm"].fillna(0).astype("float32")
     )
     df_raw["is_monsoon_season"] = df_raw["is_monsoon_season"].astype("boolean")
-    df_raw["heatwave_day_simple_flag"] = df_raw["heatwave_day_simple_flag"].astype("boolean")
+    df_raw["heatwave_day_simple_flag"] = df_raw["heatwave_day_simple_flag"].astype(
+        "boolean"
+    )
 
     # Creando nueva columna de Irradiación
     df_raw["Irradiance_wm2"] = round(
@@ -106,6 +110,7 @@ def cargar_datos():
 # Mostrar df limpio
 df = cargar_datos()
 
+
 @st.cache_data
 def cargar_ciudades():
     # Carpeta raíz
@@ -126,24 +131,21 @@ df_ciudades_estados = cargar_ciudades()
 st.markdown(
     """
             <h4> 1. ¿Qué es?</h4>
-            <p>Es un dashboard climatológico que usa un dataset de Kaggle que nos ayudará a visualizar la información histórica de la temperatura y radiación en el país de la India desde el año 1940 hasta el 2026
-            .</p>
+            <p>Dashboard climatológico que visualiza información histórica de la India (1940-2026) sobre radiación, temperatura, balance hídrico y brillo solar, utilizando un dataset de Kaggle.</p>
             <h4>2. ¿Cómo lo hice?</h4>
             <p>El proyecto se creó con las siguientes tecnologías:</p>
             <ul>
                 <li><span style='font-weight:600;'>Python v.3.12</span>: Núcleo fundamental en el desarrollo.</li>
-                <li><span style='font-weight:600;'>UV</span>: Entorno ultra rápido de Python.</li>
+                <li><span style='font-weight:600;'>UV</span>: Entorno ultra rápido de Python y gestión de dependencias.</li>
                 <li><span style='font-weight:600;'>Visual Studio Code</span>: Editor de código con el mejor autocompletado que hay (pylance).</li>
                 <li><span style='font-weight:600;'>Pandas</span>: Librería por excelencia para manipulación y limpieza de datos.</li>
-                <li><span style='font-weight:600;'>Numpy</span>: Para cálculos más eficientes.</li>
+                <li><span style='font-weight:600;'>Numpy</span>: Para operaciones vectorizadas eficientes.</li>
                 <li><span style='font-weight:600;'>Plotly</span>: Gráficos interactivos para web.</li>
                 <li><span style='font-weight:600;'>Streamlit</span>: Para aportar interactividad en la información de los gráficos con slicers.</li>
                 <li><span style='font-weight:600;'>Streamlit Community Cloud</span>: Nube Saas para despliegue de proyecto.</li>
             </ul>
             <br>
             <p style='font-weight:800;'>Flujo: Extracción → Transformación y Carga → Filtro y Manipulación → Paginación de contenido → Visualización → Exportar a Github → Despliegue en nube</p>
-            <br>
-            <p style='font-weight:600; text-decoration: underline;'>Daframe (primeros 20 registros)</p>
             """,
     unsafe_allow_html=True,
 )
@@ -151,7 +153,21 @@ st.dataframe(df.head(20), "stretch")
 st.markdown(
     """
             <h4>3. ¿Cuál es el objetivo?</h4>
-            <p>Es poder medir de manera ágil el impacto histórico de la temperatura y la radiación solar (mj/m2) en los estados y ciudades de la India, para que posteriormente los encargados de la salud y ambiente de dicho país decidan las mejores estrategias en favor de sus ciudadanos.</p>
+            <p>Medir de manera ágil el impacto histórico de la temperatura, balance y la radiación solar (Mj/m²) en la India, optimizando la toma de decisiones de los responsables de salud y medioambiente en favor de la población.</p>
+            <h4>4. Preguntas del proyecto</h4>
+            <ul>
+                <li>¿Cuál es el comportamiento histórico de la radiación media respecto al umbral de 20 MJ/m² según el país, estado o ciudad?</li>
+                <li>¿Cómo ha evolucionado históricamente la temperatura media según el país, temporada, estado o ciudad?</li>
+                <li>¿Cómo varían la duración media del brillo solar y la longitud del día según el país, temporada, estado o ciudad?</li>
+                <li>¿Cómo ha evolucionado históricamente el balance hídrico a nivel nacional, temporal, estatal y local?</li>
+                <li>¿Cuál es el grado de asociación y dependencia entre las distintas variables climáticas analizadas en todo el país?</li>
+                <li>¿Cuál es la distribución de las ciudades según su radiación por año y estación?</li>
+                <li>¿Qué ciudades superan o quedan fuera del umbral de radiación según la temporada?</li>
+                <li>¿Cuáles son las ciudades más afectadas por la duración de olas de calor según el año y la estación?</li>
+                <li>¿Cuál es la distribución de las ciudades según su temperatura por año y estación?</li>
+                <li>¿Qué ciudades presentan condiciones de calor extremo según el año y la estación?</li>
+                <li>¿Qué ciudades registran desviaciones hídricas a nivel nacional según la temporada?</li>
+            </ul>
             """,
     unsafe_allow_html=True,
 )

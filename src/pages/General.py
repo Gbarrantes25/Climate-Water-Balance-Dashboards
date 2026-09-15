@@ -90,217 +90,170 @@ def contenedor():
     ].corr(numeric_only=True)
 
     col1, col2, col3, col4 = st.columns(4)
+
     def metricas_calculadas():
-            # Temp Min
-            temp_min_ly = df.loc[
-                df["Year"] == 2025
-            ]["Temp_Min"].median()
-            temp_min_actual = df.loc[
-                df["Year"] == 2026
-            ]["Temp_Min"].median()
-            temp_min_comparativo = temp_min_actual - temp_min_ly
-    
-            # Temp Max
-            temp_max_ly = df.loc[
-                df["Year"] == 2025
-            ]["Temp_Max"].median()
-            temp_max_actual = df.loc[
-                df["Year"] == 2026
-            ]["Temp_Max"].median()
-            temp_max_comparativo = temp_max_actual - temp_max_ly
-    
-            # Temp Media
-            temp_media_ly = (
-                df.loc[df["Year"] == 2025][
-                    "Temp_Max"
-                ].median()
-                + df.loc[df["Year"] == 2025][
-                    "Temp_Min"
-                ].median()
-            ) / 2
-            temp_media_actual = (
-                df.loc[df["Year"] == 2026][
-                    "Temp_Max"
-                ].median()
-                + df.loc[df["Year"] == 2026][
-                    "Temp_Min"
-                ].median()
-            ) / 2
-            temp_media_comparativo = temp_media_actual - temp_media_ly
-    
-            # Radiación Solar
-            radiacion_ly = df.loc[
-                df["Year"] == 2025
-            ]["Solar_Radiation"].median()
-            radiacion_actual = df.loc[
-                df["Year"] == 2026
-            ]["Solar_Radiation"].median()
-            radiacion_comparativo = radiacion_actual - radiacion_ly
-    
-            # Función para horas y minutos
-            def horas_minutos(horas_decimales):
-                horas = int(horas_decimales)
-                minutos = int((horas_decimales - horas) * 60)
-                return f"{horas} h y {minutos} m"
-    
-            # Brillo solar
-            brillo_solar_ly = (
-                df[df["Year"] == 2025][
-                    "Sunshine_sec"
-                ].median()
-                / 3600
-            )
-            brillo_solar_actual = (
-                df[df["Year"] == 2026][
-                    "Sunshine_sec"
-                ].median()
-                / 3600
-            )
-            brillo_solar_comparativo = int((brillo_solar_actual - brillo_solar_ly) * 60)
-    
-            # Duración diurna
-            diurna_ly = (
-                df[df["Year"] == 2025][
-                    "Daylight_sec"
-                ].median()
-                / 3600
-            )
-            diurna_actual = (
-                df[df["Year"] == 2026][
-                    "Daylight_sec"
-                ].median()
-                / 3600
-            )
-            diurna_comparativo = int((diurna_actual - diurna_ly) * 60)
-    
-            # Precipitación
-            precipitacion_actual = df[
-                df["Year"] == 2026
-            ]["Precipitation_mm"].sum()
-    
-            # Evapotranspiración
-            evapotransp_ly = df[
-                df["Year"] == 2025
-            ]["Ref_Evapotransp_mm"].sum()
-            evapotransp_actual = df[
-                df["Year"] == 2026
-            ]["Ref_Evapotransp_mm"].sum()
-    
-            # Balance hídrico
-            balance_hidrico_normal = precipitacion_actual - evapotransp_actual
-    
-            def balance_hidrico(precipitacion, evapotranspiracion):
-                if precipitacion < evapotranspiracion:
-                    return "Décifit hídrico"
-                elif precipitacion <= (evapotranspiracion * 1.07):
-                    return "Superávit hídrico"
-                else:
-                    return "Superávit crítico"
-    
-            if (
-                balance_hidrico(precipitacion_actual, evapotransp_actual)
-                == "Décifit hídrico"
-            ):
-                actual = "down"
-                color = "orange"
-            elif (
-                balance_hidrico(precipitacion_actual, evapotransp_actual)
-                == "Superávit hídrico"
-            ):
-                actual = "up"
-                color = "green"
+        # Temp Min
+        temp_min_ly = df.loc[df["Year"] == 2025]["Temp_Min"].median()
+        temp_min_actual = df.loc[df["Year"] == 2026]["Temp_Min"].median()
+        temp_min_comparativo = temp_min_actual - temp_min_ly
+
+        # Temp Max
+        temp_max_ly = df.loc[df["Year"] == 2025]["Temp_Max"].median()
+        temp_max_actual = df.loc[df["Year"] == 2026]["Temp_Max"].median()
+        temp_max_comparativo = temp_max_actual - temp_max_ly
+
+        # Temp Media
+        temp_media_ly = (
+            df.loc[df["Year"] == 2025]["Temp_Max"].median()
+            + df.loc[df["Year"] == 2025]["Temp_Min"].median()
+        ) / 2
+        temp_media_actual = (
+            df.loc[df["Year"] == 2026]["Temp_Max"].median()
+            + df.loc[df["Year"] == 2026]["Temp_Min"].median()
+        ) / 2
+        temp_media_comparativo = temp_media_actual - temp_media_ly
+
+        # Radiación Solar
+        radiacion_ly = df.loc[df["Year"] == 2025]["Solar_Radiation"].median()
+        radiacion_actual = df.loc[df["Year"] == 2026]["Solar_Radiation"].median()
+        radiacion_comparativo = radiacion_actual - radiacion_ly
+
+        # Función para horas y minutos
+        def horas_minutos(horas_decimales):
+            horas = int(horas_decimales)
+            minutos = int((horas_decimales - horas) * 60)
+            return f"{horas} h y {minutos} m"
+
+        # Brillo solar
+        brillo_solar_ly = df[df["Year"] == 2025]["Sunshine_sec"].median() / 3600
+        brillo_solar_actual = df[df["Year"] == 2026]["Sunshine_sec"].median() / 3600
+        brillo_solar_comparativo = int((brillo_solar_actual - brillo_solar_ly) * 60)
+
+        # Duración diurna
+        diurna_ly = df[df["Year"] == 2025]["Daylight_sec"].median() / 3600
+        diurna_actual = df[df["Year"] == 2026]["Daylight_sec"].median() / 3600
+        diurna_comparativo = int((diurna_actual - diurna_ly) * 60)
+
+        # Precipitación
+        precipitacion_actual = df[df["Year"] == 2026]["Precipitation_mm"].sum()
+
+        # Evapotranspiración
+        evapotransp_ly = df[df["Year"] == 2025]["Ref_Evapotransp_mm"].sum()
+        evapotransp_actual = df[df["Year"] == 2026]["Ref_Evapotransp_mm"].sum()
+
+        # Balance hídrico
+        balance_hidrico_normal = precipitacion_actual - evapotransp_actual
+
+        def balance_hidrico(precipitacion, evapotranspiracion):
+            if precipitacion < evapotranspiracion:
+                return "Décifit hídrico"
+            elif precipitacion <= (evapotranspiracion * 1.07):
+                return "Superávit hídrico"
             else:
-                actual = "up"
-                color = "red"
-    
-            col1.metric(
-                label="Temp Min Actual",
-                value=f"{temp_min_actual:.1f} °C",
-                icon="❄",
-                border=True,
-                delta_description=f"vs 2025 ({temp_min_ly:.1f} °C)",
-                delta=f"{temp_min_comparativo:.1f} °C",
-            )
-            col1.metric(
-                label="Temp Max Actual",
-                value=f"{temp_max_actual:.1f} °C",
-                icon="🔥",
-                border=True,
-                delta_description=f"vs 2025 ({temp_max_ly:.1f} °C)",
-                delta=f"{temp_max_comparativo:.1f} °C",
-            )
-            col2.metric(
-                label="Temp Media Actual",
-                value=f"{temp_media_actual:.1f} °C",
-                icon="🌡",
-                border=True,
-                delta_description=f"vs 2025 ({temp_media_ly:.1f} °C)",
-                delta=f"{temp_media_comparativo:.1f} °C",
-            )
-            col2.metric(
-                label="Radiación Solar Actual",
-                value=f"{radiacion_actual:.1f} mj/m²",
-                icon="⛱",
-                border=True,
-                delta_description=f"vs 2025 ({radiacion_ly:.1f} mj/m²)",
-                delta=f"{radiacion_comparativo:.1f} mj/m²",
-            )
-            col3.metric(
-                label="Brillo solar Actual",
-                value=horas_minutos(brillo_solar_actual),
-                delta=f"{brillo_solar_comparativo} minutos",
-                delta_description=f"vs 2025 ({horas_minutos(brillo_solar_ly)})",
-                icon="🌞",
-                border=True,
-            )
-            col3.metric(
-                label="Duración diurna Actual",
-                value=horas_minutos(diurna_actual),
-                delta=f"{diurna_comparativo} minutos",
-                delta_description=f"vs 2025 ({horas_minutos(diurna_ly)})",
-                icon="🧭",
-                border=True,
-            )
-            col4.metric(
-                label="Precipitación Actual",
-                value=f"{precipitacion_actual:.1f} mm",
-                delta=f"{balance_hidrico_normal:.1f} mm",
-                delta_description=f"{balance_hidrico(precipitacion_actual, evapotransp_actual)}",
-                delta_arrow=actual,
-                delta_color=color,
-                icon="☔",
-                border=True,
-            )
-            col4.metric(
-                label="Límite Superávit crítico Actual",
-                value=f"{evapotransp_actual * 1.07:.1f} mm",
-                delta=f"{evapotransp_actual * 1.07 - evapotransp_ly * 1.07:.1f} mm",
-                delta_description=f"vs 2025 ({evapotransp_ly * 1.07:.1f} mm)",
-                delta_arrow="off",
-                icon="🌳",
-                border=True,
-                delta_color="gray",
-            )
-            st.divider()
+                return "Superávit crítico"
+
+        if (
+            balance_hidrico(precipitacion_actual, evapotransp_actual)
+            == "Décifit hídrico"
+        ):
+            actual = "down"
+            color = "orange"
+        elif (
+            balance_hidrico(precipitacion_actual, evapotransp_actual)
+            == "Superávit hídrico"
+        ):
+            actual = "up"
+            color = "green"
+        else:
+            actual = "up"
+            color = "red"
+
+        col1.metric(
+            label="Temp Min Actual",
+            value=f"{temp_min_actual:.1f} °C",
+            icon="❄",
+            border=True,
+            delta_description=f"vs 2025 ({temp_min_ly:.1f} °C)",
+            delta=f"{temp_min_comparativo:.1f} °C",
+        )
+        col1.metric(
+            label="Temp Max Actual",
+            value=f"{temp_max_actual:.1f} °C",
+            icon="🔥",
+            border=True,
+            delta_description=f"vs 2025 ({temp_max_ly:.1f} °C)",
+            delta=f"{temp_max_comparativo:.1f} °C",
+        )
+        col2.metric(
+            label="Temp Media Actual",
+            value=f"{temp_media_actual:.1f} °C",
+            icon="🌡",
+            border=True,
+            delta_description=f"vs 2025 ({temp_media_ly:.1f} °C)",
+            delta=f"{temp_media_comparativo:.1f} °C",
+        )
+        col2.metric(
+            label="Radiación Solar Actual",
+            value=f"{radiacion_actual:.1f} mj/m²",
+            icon="⛱",
+            border=True,
+            delta_description=f"vs 2025 ({radiacion_ly:.1f} mj/m²)",
+            delta=f"{radiacion_comparativo:.1f} mj/m²",
+        )
+        col3.metric(
+            label="Brillo solar Actual",
+            value=horas_minutos(brillo_solar_actual),
+            delta=f"{brillo_solar_comparativo} minutos",
+            delta_description=f"vs 2025 ({horas_minutos(brillo_solar_ly)})",
+            icon="🌞",
+            border=True,
+        )
+        col3.metric(
+            label="Duración diurna Actual",
+            value=horas_minutos(diurna_actual),
+            delta=f"{diurna_comparativo} minutos",
+            delta_description=f"vs 2025 ({horas_minutos(diurna_ly)})",
+            icon="🧭",
+            border=True,
+        )
+        col4.metric(
+            label="Precipitación Actual",
+            value=f"{precipitacion_actual:.1f} mm",
+            delta=f"{balance_hidrico_normal:.1f} mm",
+            delta_description=f"{balance_hidrico(precipitacion_actual, evapotransp_actual)}",
+            delta_arrow=actual,
+            delta_color=color,
+            icon="☔",
+            border=True,
+        )
+        col4.metric(
+            label="Límite Superávit crítico Actual",
+            value=f"{evapotransp_actual * 1.07:.1f} mm",
+            delta=f"{evapotransp_actual * 1.07 - evapotransp_ly * 1.07:.1f} mm",
+            delta_description=f"vs 2025 ({evapotransp_ly * 1.07:.1f} mm)",
+            delta_arrow="off",
+            icon="🌳",
+            border=True,
+            delta_color="gray",
+        )
+        st.divider()
 
     metricas_calculadas()
 
-    # Valor de Irradiancia límite
-    radiacion_aceptable = [20] * len(df_ag["Year"])
-
     # Lineplot de Radiación.
     fig_combinado1 = go.Figure()
-    radiacion_limite = go.Scatter(
-        x=df_ag["Year"],
-        y=radiacion_aceptable,
-        name="Aceptable mj/m²",
-        line={"color": "orange", "dash": "dot"},
-        opacity=0.7,
+    fig_combinado1.add_hline(
+        y=20,
+        line_color="orange",
+        line_dash="dot",
+        line_width=0.8,
+        annotation_text="Umbral",
+        annotation_position="right",
     )
     radiacion_mediana = go.Scatter(
         x=df_ag["Year"],
         y=df_ag["Solar_Radiation_median"],
-        name="Promedio mj/m²",
+        name="Media",
         line={"color": "green", "dash": "dot"},
         mode="markers",
         marker={
@@ -309,29 +262,34 @@ def contenedor():
             "sizeref": 2.7,
         },
         line_shape="spline",
+        customdata=df_ag[["Year", "Solar_Radiation_median"]],
+        hovertemplate="<b>Año: </b>%{customdata[0]}<br><b>Radiación Media: </b>%{customdata[1]:.2f} Mj/m²",
     )
     radiacion_minima = go.Scatter(
         x=df_ag["Year"],
         y=df_ag["Solar_Radiation_min"],
-        name="Mínimo mj/m²",
+        name="Mínimo",
         line={"color": "skyblue"},
         opacity=0.5,
         line_shape="spline",
+        customdata=df_ag[["Year", "Solar_Radiation_min"]],
+        hovertemplate="<b>Año: </b>%{customdata[0]}<br><b>Radiación Mínima: </b>%{customdata[1]:.2f} Mj/m²",
     )
     radiacion_maxima = go.Scatter(
         x=df_ag["Year"],
         y=df_ag["Solar_Radiation_max"],
-        name="Máximo mj/m²",
+        name="Máximo",
         line={"color": "red"},
         opacity=0.5,
         line_shape="spline",
+        customdata=df_ag[["Year", "Solar_Radiation_max"]],
+        hovertemplate="<b>Año: </b>%{customdata[0]}<br><b>Radiación Máxima: </b>%{customdata[1]:.2f} Mj/m²",
     )
     fig_combinado1.add_traces(
         [
             radiacion_maxima,
             radiacion_mediana,
             radiacion_minima,
-            radiacion_limite,
         ]
     )
     fig_combinado1.update_layout(
@@ -396,40 +354,43 @@ def contenedor():
         y=df_ag["Temp_Max"],
         mode="lines",
         line_shape="spline",
-        name="Máximo C°",
+        name="Máximo",
         line={"color": "red"},
         opacity=0.5,
+        customdata=df_ag[["Year", "Temp_Max"]],
+        hovertemplate="<b>Año: </b>%{customdata[0]}<br><b>Temperatura Máxima: </b>%{customdata[1]:.1f} C°",
     )
-    amplitud_termica = go.Scatter(
+    amplitud_termica = go.Bar(
         x=df_ag["Year"],
         y=df_ag["Thermal_amplitude"],
-        name="Amplitud Térmica C°",
+        name="Amplitud Térmica",
         opacity=0.7,
-        line_shape="spline",
-        mode="markers",
         marker={
             "color": "orange",
-            "size": df_ag["Thermal_amplitude"] * 1.3,
-            "sizemode": "diameter",
         },
-        # fill="tozeroy",
+        customdata=df_ag[["Year", "Thermal_amplitude"]],
+        hovertemplate="<b>Año: </b>%{customdata[0]}<br><b>Amplitud Térmica: </b>%{customdata[1]:.1f} C°",
     )
     temperatura_minima = go.Scatter(
         x=df_ag["Year"],
         y=df_ag["Temp_Min"],
         mode="lines",
         line_shape="spline",
-        name="Mínimo C°",
+        name="Mínimo",
         line={"color": "skyblue"},
         opacity=0.5,
+        customdata=df_ag[["Year", "Temp_Min"]],
+        hovertemplate="<b>Año: </b>%{customdata[0]}<br><b>Temperatura Mínima: </b>%{customdata[1]:.1f} C°",
     )
     temperatura_media = go.Scatter(
         x=df_ag["Year"],
         y=df_ag["Temp_Media"],
         mode="markers",
         line_shape="spline",
-        name="Media C°",
+        name="Media",
         line={"color": "green", "dash": "dot"},
+        customdata=df_ag[["Year", "Temp_Media"]],
+        hovertemplate="<b>Año: </b>%{customdata[0]}<br><b>Temperatura Media: </b>%{customdata[1]:.1f} C°",
     )
     fig_combinado2.add_traces(
         [temperatura_maxima, temperatura_minima, amplitud_termica, temperatura_media]
@@ -444,6 +405,7 @@ def contenedor():
         },
         margin={"t": 100, "b": 40, "l": 40, "r": 40},
         autosize=True,
+        barcornerradius=15,
     )
     st.markdown(
         f"<h5 style='text-align:center;'>Evolución histórica de las temperaturas máximas y mínimas promedio anuales ({selector} 1940 - 2026)</h5>",
@@ -498,6 +460,8 @@ def contenedor():
         name="Horas de Brillo Solar",
         mode="lines",
         line={"color": "orange"},
+        customdata=df_ag[["Year", "Sunshine_hrs_median"]],
+        hovertemplate="<b>Año: </b>%{customdata[0]}<br><b>Duración Media de Brillo Solar: </b>%{customdata[1]:.2f} hrs",
     )
     duracion_dia_hrs = go.Scatter(
         x=df_ag["Year"],
@@ -507,6 +471,8 @@ def contenedor():
         mode="lines",
         line={"color": "green", "dash": "dot"},
         opacity=0.85,
+        customdata=df_ag[["Year", "Daylight_hrs_median"]],
+        hovertemplate="<b>Año: </b>%{customdata[0]}<br><b>Duración Media del Día: </b>%{customdata[1]:.2f} hrs",
     )
     fig_combinado3.add_traces([duracion_brillo_solar_hrs, duracion_dia_hrs])
     fig_combinado3.update_layout(
@@ -592,28 +558,35 @@ def contenedor():
     precipitacion = go.Scatter(
         x=df_ag["Year"],
         y=df_ag["Precipitation_total"],
-        name="Total Precipitación (mm)",
+        name="Precipitación",
         fill="tozeroy",
-        fillcolor=f"rgba{(*pc.hex_to_rgb('#2A2F7C'),0.7)}",
-        mode="none"
+        fillcolor=f"rgba{(*pc.hex_to_rgb('#2A2F7C'), 0.7)}",
+        mode="none",
+        customdata=df_ag[["Year", "Precipitation_total"]],
+        hovertemplate="<b>Año: </b>%{customdata[0]}<br><b>Precipitación Total: </b>%{customdata[1]:.2f} mm",
     )
     evapotransp = go.Scatter(
         x=df_ag["Year"],
         y=df_ag["Ref_Evapotransp_total"],
         marker_color="#CACCED",
-        name="Total Evapotranspiración (mm)",
+        name="Evapotranspiración",
         fill="tozeroy",
         fillcolor="#CACCED",
+        customdata=df_ag[["Year", "Ref_Evapotransp_total"]],
+        hovertemplate="<b>Año: </b>%{customdata[0]}<br><b>Evapotranspiración Total: </b>%{customdata[1]:.2f} mm",
     )
     limite = go.Scatter(
         x=df_ag["Year"],
         y=superavit_critico,
         marker_color="#b4d6f8",
-        name="Límite de Superávit Hídrico (mm)",
+        name="Límite",
         line={"dash": "dot"},
+        customdata=df_ag[["Year"]],
+        hovertemplate="<b>Año: </b>%{customdata[0]}<br><b>Límite Superávit: </b>%{y:.2f} mm",
+
     )
 
-    fig_combinado5.add_traces([limite,evapotransp, precipitacion])
+    fig_combinado5.add_traces([limite, evapotransp, precipitacion])
     fig_combinado5.update_layout(
         legend={
             "orientation": "h",
@@ -683,7 +656,7 @@ def contenedor():
         z=df_ag_corr.values,
         x=df_ag_corr.index,
         y=df_ag_corr.columns,
-        colorscale=[[0.0,"#ECEDF8"],[0.5,"#636ACA"],[1,"#2A2F7C"]],
+        colorscale=[[0.0, "#ECEDF8"], [0.5, "#636ACA"], [1, "#2A2F7C"]],
         text=df_ag_corr.values.round(2),
         texttemplate="<b>%{text}</b>",
     )
@@ -704,16 +677,17 @@ def contenedor():
                 ["Total", "Radiación solar → Precipitación", "Fuerte (inversa)"],
                 ["Total", "Evapotranspiración → Duración del día", "Fuerte"],
                 ["Total", "Evapotranspiración → Brillo solar", "Fuerte"],
-                ["Monzón","Precipitación → Duración del día","Moderada"],
-                ["Monzón","Radiación solar → Temperatura media","Moderada"],
-                ["Monzón","Radiación solar → Brillo solar","Moderada"],
-                ["Monzón","Radiación solar → Evapotranspiración","Moderada"],
-                ["Monzón","Temperatura máxima → Radiación solar","Moderada"],
-                ["Sequía","Radiación solar → Precipitación","Moderada (inversa)"],
-                ["Sequía","Evapotranspiración → Brillo solar","Fuerte"]
+                ["Monzón", "Precipitación → Duración del día", "Moderada"],
+                ["Monzón", "Radiación solar → Temperatura media", "Moderada"],
+                ["Monzón", "Radiación solar → Brillo solar", "Moderada"],
+                ["Monzón", "Radiación solar → Evapotranspiración", "Moderada"],
+                ["Monzón", "Temperatura máxima → Radiación solar", "Moderada"],
+                ["Sequía", "Radiación solar → Precipitación", "Moderada (inversa)"],
+                ["Sequía", "Evapotranspiración → Brillo solar", "Fuerte"],
             ],
             border=True,
             width="content",
         )
+
 
 contenedor()
