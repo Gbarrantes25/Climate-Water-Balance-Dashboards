@@ -64,7 +64,9 @@ Este proyecto transforma un dataset histórico de Kaggle en un dashboard multi-p
 ## 🖼️ Vistas Previas del proyecto
 <details>
   <summary>Dashboard</summary>
-    <!-- Agregar aquí las capturas de pantalla del dashboard -->
+    <img width="2310" height="746" alt="image" src="https://github.com/user-attachments/assets/15d2b785-4459-4f89-9315-2b59e7fe6bf8" />
+    <img width="2438" height="850" alt="image" src="https://github.com/user-attachments/assets/31f87411-d8d8-46da-aa01-c3c6f20cad46" />
+    <img width="2478" height="1002" alt="image" src="https://github.com/user-attachments/assets/542191d4-d7e4-4b8b-b8ae-0a475d846152" />
 </details>
 
 ## 👤 Autor
