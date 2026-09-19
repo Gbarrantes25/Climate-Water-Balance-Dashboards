@@ -1,61 +1,70 @@
 # Climate & Water Balance Dashboards 💻
 ## 📃 Descripción General
-Proyecto de análisis y visualización de rendimiento académico desarrollado en Python con Streamlit, diseñado para explorar el desempeño de alumnos por curso, aula y periodo de manera interactiva.
-Este proyecto transforma un modelo de datos dimensional (calendario, alumnos, cursos y notas) en un dashboard visual mediante:
-- 📊 Modelo Dimensional: Tablas de dimensión y hechos generadas y relacionadas por claves.
-- 🧹 Limpieza de Datos: Tratamiento de valores nulos y normalización de columnas.
-- 📈 Agrupaciones y Pivotes: Promedios por curso, por alumno y tablas pivote.
-- 🎨 Visualizaciones: Histograma, boxplot, violinplot, heatmap, lineplot, barplot, regplot y countplot.
-- 🖱️ Filtros Interactivos: Multiselectores por aula con actualización aislada mediante `st.fragment`.
+Proyecto de análisis y visualización climatológica desarrollado en Python con Streamlit y Plotly, diseñado para explorar el comportamiento histórico del clima y el balance hídrico de la India (1940-2026) a nivel país, estado y ciudad de manera interactiva.
+Este proyecto transforma un dataset histórico de Kaggle en un dashboard multi-página mediante:
+- 🧹 Limpieza y Transformación de Datos: imputación de nulos por mediana (año, estado, ciudad), tipado optimizado (`category`, `float32`, `boolean`) y creación de columnas derivadas (irradiancia, temperatura media, amplitud térmica, balance hídrico).
+- 📈 Agrupaciones y Métricas: promedios y totales por año, década, estado y ciudad, con métricas comparativas año contra año.
+- 🗺️ Visualizaciones Geográficas: mapas de dispersión (`Scattermap`) de radiación, temperatura, olas de calor y balance hídrico sobre el mapa de la India.
+- 📊 Visualizaciones Estadísticas: series de tiempo, barras, histogramas, heatmap de correlación y rankings de ciudades (Top N).
+- 🖱️ Filtros Interactivos: selectores de temporada (Monzón/Sequía), estado, ciudad, año y escala temporal con actualización aislada mediante `st.fragment`.
 
 ## 📊 Contenido del proyecto
-- Sección de Tablas de Dimensión y Hechos: modelo de datos base (calendario, alumnos, cursos, notas).
-- Sección de Limpieza de Datos: imputación de nulos y renombrado de columnas.
-- Sección de Agrupaciones: promedios por curso y por alumno-curso.
-- Sección de Join y Pivote: unión de tablas y tabla pivote alumno x curso.
-- Secciones de Visualización (6 a 12): distribución de notas, comparativos por curso, mapa de calor, evolución temporal, ranking, relación nota-edad y aprobados vs desaprobados.
+- **Inicio**: presentación del proyecto, carga y limpieza del dataset, objetivos y preguntas de investigación.
+- **General**: comportamiento histórico a nivel país de radiación solar, temperatura, brillo/duración del día, balance hídrico (precipitación vs. evapotranspiración) y correlación entre variables climáticas.
+- **Estados & Ciudades**: mismas variables climáticas filtradas y comparadas por estado y ciudad, con escala temporal seleccionable (década/año).
+- **Detalles**: análisis geoespacial y de ranking por ciudad (radiación, temperatura, días de ola de calor y balance hídrico), con hallazgos y conclusiones por temporada.
 
 ## 🛠️ Herramientas y Tecnologías Utilizadas
-- Desarrollo y Visualización: Python, Streamlit.
-- Librerías: 
-  - `pandas` y `numpy` para manipulación y generación de datos.
-  - `matplotlib` y `seaborn` para visualización estadística.
-  - `streamlit` para el dashboard interactivo.
-- Fuente de Datos: Datos sintéticos generados con semilla fija (`np.random.seed`) para reproducibilidad.
-- Lenguaje: Python 3.
+- Desarrollo y Visualización: Python, Streamlit, Plotly.
+- Librerías:
+  - `pandas` y `numpy` para manipulación, limpieza y agregación de datos.
+  - `plotly` (`graph_objects`) para gráficos interactivos y mapas.
+  - `matplotlib` y `seaborn` para apoyo en análisis estadístico.
+  - `streamlit` para el dashboard interactivo multi-página.
+- Fuente de Datos: dataset histórico climatológico de la India obtenido de Kaggle, almacenado en formato `.parquet`.
+- Gestor de Entorno: UV.
+- Lenguaje: Python 3.12+.
 
 ## ⚙️ Configuración del Entorno
-- Software Necesario: Python 3.10+ y las librerías `streamlit`, `pandas`, `numpy`, `matplotlib` y `seaborn`.
+- Software Necesario: Python 3.12+ y las librerías `streamlit`, `pandas`, `numpy`, `plotly`, `matplotlib` y `seaborn`.
 - Instalación:
   - Clonar el repositorio.
-  - Instalar dependencias: `pip install streamlit pandas numpy matplotlib seaborn`.
-  - Ejecutar el proyecto: `streamlit run Analisis.py`.
+  - Instalar dependencias con UV: `uv sync`.
+  - Ejecutar el proyecto: `streamlit run app.py`.
 
 ## 📂 Estructura del Repositorio
 <code>.
-  ├── Analisis.py          # Script principal del dashboard en Streamlit
-  ├── .python-version      # Versión de python del proyecto
-  ├── README.md            # Este archivo
-  ├── uv.lock              # Gestor de paquetes del proyecto
-  ├── src/
-  ├   └── mi_proyecto/
-  ├       └── __init__.py  # Puerta de entrada del proyecto
-  └── pyproject.toml       # Gestor y configuración de dependencias
+  ├── app.py                       # Configuración de página y enrutamiento (navegación)
+  ├── README.md                    # Este archivo
+  ├── uv.lock                      # Gestor de paquetes del proyecto
+  ├── pyproject.toml               # Gestor y configuración de dependencias
+  └── src/
+      ├── assets/
+      │   └── logo.svg              # Logo del dashboard
+      ├── data/
+      │   ├── ClimaHistorico.parquet   # Dataset histórico climatológico
+      │   └── Estados.parquet          # Dataset de estados y ciudades
+      └── pages/
+          ├── Inicio.py               # Carga, limpieza y presentación del proyecto
+          ├── General.py              # Análisis general a nivel país
+          ├── Estados_Ciudades.py     # Análisis por estado y ciudad
+          └── Detalles.py             # Análisis geoespacial y ranking por ciudad
 </code>
 
 ## ✅ Características Principales
-- Modelo Dimensional: Tablas de calendario, alumnos, cursos y hechos (notas) relacionadas por Id.
+- Enrutamiento multi-página con `st.navigation` y `st.Page`, incluyendo enlace externo a la documentación en GitHub.
 - Optimización de Rendimiento:
-  - `@st.cache_data` para evitar recalcular la generación y el merge de datos en cada interacción.
-  - `@st.fragment` para que cada gráfico con filtro se actualice de forma aislada, sin recargar todo el dashboard.
-- Visualizaciones interactivas filtradas por aula: histograma, lineplot y countplot.
-- Documentación embebida: cada sección muestra su propio código fuente con `inspect.getsource()`.
+  - `@st.cache_data` para evitar recalcular la carga y limpieza del dataset en cada interacción.
+  - `@st.fragment` para que cada sección con filtros se actualice de forma aislada, sin recargar todo el dashboard.
+- Filtros por temporada (Monzón/Sequía), estado, ciudad, año y escala temporal (década/año).
+- Mapas geográficos interactivos (`Scattermap`) de radiación, temperatura, olas de calor y balance hídrico sobre la India.
+- Comparativos año contra año mediante métricas (`st.metric`) para temperatura, radiación y balance hídrico.
+- Hallazgos y conclusiones contextualizadas por temporada en cada sección de análisis.
 
 ## 🖼️ Vistas Previas del proyecto
 <details>
   <summary>Dashboard</summary>
-    <img width="1300" height="958" alt="image" src="https://github.com/user-attachments/assets/96720cad-fe68-40bf-ab9d-2361c6f01d62" />
-    <img width="1368" height="1079" alt="image" src="https://github.com/user-attachments/assets/6d58778a-c468-4f77-b680-8ee42cd5a99c" />
+    <!-- Agregar aquí las capturas de pantalla del dashboard -->
 </details>
 
 ## 👤 Autor
