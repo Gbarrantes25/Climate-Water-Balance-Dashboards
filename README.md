@@ -33,23 +33,24 @@ Este proyecto transforma un dataset histórico de Kaggle en un dashboard multi-p
   - Ejecutar el proyecto: `streamlit run app.py`.
 
 ## 📂 Estructura del Repositorio
-<code>.
-  ├── app.py                       # Configuración de página y enrutamiento (navegación)
-  ├── README.md                    # Este archivo
-  ├── uv.lock                      # Gestor de paquetes del proyecto
-  ├── pyproject.toml               # Gestor y configuración de dependencias
-  └── src/
-      ├── assets/
-      │   └── logo.svg              # Logo del dashboard
-      ├── data/
-      │   ├── ClimaHistorico.parquet   # Dataset histórico climatológico
-      │   └── Estados.parquet          # Dataset de estados y ciudades
-      └── pages/
-          ├── Inicio.py               # Carga, limpieza y presentación del proyecto
-          ├── General.py              # Análisis general a nivel país
-          ├── Estados_Ciudades.py     # Análisis por estado y ciudad
-          └── Detalles.py             # Análisis geoespacial y ranking por ciudad
-</code>
+```text
+.
+├── app.py                     # Configuración de página y enrutamiento (navegación)
+├── README.md                  # Este archivo
+├── uv.lock                    # Gestor de paquetes del proyecto
+├── pyproject.toml             # Gestor y configuración de dependencias
+└── src/
+    ├── assets/
+    │   └── logo.svg           # Logo del dashboard
+    ├── data/
+    │   ├── ClimaHistorico.parquet # Dataset histórico climatológico
+    │   └── Estados.parquet    # Dataset de estados y ciudades
+    └── pages/
+        ├── Inicio.py          # Carga, limpieza y presentación del proyecto
+        ├── General.py         # Análisis general a nivel país
+        ├── Estados_Ciudades.py # Análisis por estado y ciudad
+        └── Detalles.py        # Análisis geoespacial y ranking por ciudad
+```
 
 ## ✅ Características Principales
 - Enrutamiento multi-página con `st.navigation` y `st.Page`, incluyendo enlace externo a la documentación en GitHub.
